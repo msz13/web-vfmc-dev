@@ -10,7 +10,7 @@
 ### User Story 1 - Enter Scramble and Build Solution Step by Step (Priority: P1)
 
 A competitor opens the app on their phone before a practice session. They type in
-a WCA scramble, then work through the FMC solving stages: Edge Orientation (EO),
+a WCA scramble or command application to generate scramble then work through the FMC solving stages: Edge Orientation (EO),
 Domino Reduction (DR), Half-Turn Reduction (HTR), Floppy Reduction, Finish (or
 Finish-to-Leave-Slice), and Insertions. At each stage they type candidate move
 sequences using a calculator-style input — individual face moves (U, D, L, R, F, B)
@@ -27,7 +27,9 @@ sequence, and see the resulting cube state — with no variations or NISS needed
 
 1. **Given** an empty session, **When** the user enters a valid WCA scramble notation,
    **Then** the app displays the scrambled cube state and enables the EO step input.
-2. **Given** the EO step is active, **When** the user inputs a sequence of valid moves
+2. **Given** an empty session, **When** the user presses scramble
+   **Then** the app scrambles cube and displays the scrambled cube state and enables the EO step input.
+3. **Given** the EO step is active, **When** the user inputs a sequence of valid moves
    via keyboard or on-screen buttons, **Then** each move is appended to the current
    sequence and the cube state updates in real time.
 3. **Given** a move has been entered, **When** the user presses backspace / undo,
@@ -39,10 +41,12 @@ sequence, and see the resulting cube state — with no variations or NISS needed
 
 ### User Story 2 - Save and Compare Multiple Variations Per Step (Priority: P2)
 
-At the EO step a competitor finds three promising continuations. They save each as a
-variation, then move to DR, branching from each EO variation. After completing
-several branches they can scan all variations side by side and see the cumulative
-move count for each full path, so they can identify the shortest solution.
+At the EO step a competitor finds many edge orientations variations on every cube axes. They save each as a
+variation, then move to DR. For each EO variation it tries to find DR, saves it or discards this EO. After checking several Eos he goes to next step.
+
+ After completing checking 
+several variantions they can scan all variations side by side and see the cumulative
+move count for each full path, and state of cube to so they can identify the best solution.
 
 **Why this priority**: FMC solving is fundamentally exploratory. Without branching
 and variation management the tool is just a notepad.
