@@ -3,14 +3,14 @@
 **Feature Branch**: `001-fmc-solution-builder`
 **Created**: 2026-04-05
 **Status**: Draft
-**Input**: User description: "web version of VFMC to practice Rubik's cube Fewest Moves Challenge (FMC) on mobile and desktop without downloading software, with NISS support, step-by-step solving, multiple saved variations per step, and keyboard/calculator-style input."
+**Input**: User description: "web version of VFMC to practice Rubik's cube Fewest Moves Challenge (FMC) on mobile and desktop without downloading software, with step-by-step solving, multiple saved variations per step, and keyboard/calculator-style input."
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Enter Scramble and Build Solution Step by Step (Priority: P1)
+### User Story 1 - Build Solution Step by Step from a Scramble (Priority: P1)
 
-A competitor opens the app on their phone before a practice session. They type in
-a WCA scramble or command application to generate scramble then work through the FMC solving stages: Edge Orientation (EO),
+A competitor opens the app on their phone before a practice session. They enter a WCA
+scramble in move notation and work through the FMC solving stages: Edge Orientation (EO),
 Domino Reduction (DR), Half-Turn Reduction (HTR), Floppy Reduction, Finish (or
 Finish-to-Leave-Slice), and Insertions. At each stage they type candidate move
 sequences using a calculator-style input — individual face moves (U, D, L, R, F, B)
@@ -20,18 +20,24 @@ or keyboard on desktop.
 **Why this priority**: Without entering a scramble and inputting moves there is no
 product. This is the irreducible core of every other story.
 
-**Independent Test**: A user can enter a scramble, select the EO step, type a move
-sequence, and see the resulting cube state — with no variations or NISS needed.
+**Independent Test**: A user can enter a scramble written in standard move notation,
+select the EO step, type a move sequence, and see the resulting cube state — with no
+variations needed.
 
 **Acceptance Scenarios**:
 
-1. **Given** an empty session, **When** the user enters a valid WCA scramble notation,
-   **Then** the app displays the scrambled cube state and enables the EO step input.
-2. **Given** an empty session, **When** the user presses scramble
-   **Then** the app scrambles cube and displays the scrambled cube state and enables the EO step input.
-3. **Given** the EO step is active, **When** the user inputs a sequence of valid moves
-   via keyboard or on-screen buttons, **Then** each move is appended to the current
-   sequence and the cube state updates in real time.
+1. **Given** an empty session, **When** the user types a valid WCA scramble string,
+   **Then** the app parses the notation, displays the scrambled cube state, and enables
+   the EO step input.
+2. **Given** the EO step is active, **When** the user inputs a sequence of valid moves
+   via keyboard or on-screen buttons, **Then** the cube state updates in real time and each move is appended to the current sequence which is showed  split by steps with comments lik in example:
+     ```
+     F B R' // EO (3/3)
+     U F' R2 L2 F' D' // DR (6/9)
+     B F' R2 F' // HTR (4/13)
+     U2 L2 D2 B2 R2 // Finish (5/18)
+     ```
+
 3. **Given** a move has been entered, **When** the user presses backspace / undo,
    **Then** the last move is removed and the cube state reverts.
 4. **Given** a move sequence is being entered, **When** an invalid move token is typed,
@@ -39,20 +45,46 @@ sequence, and see the resulting cube state — with no variations or NISS needed
 
 ---
 
-### User Story 2 - Save and Compare Multiple Variations Per Step (Priority: P2)
+### User Story 2 - Scramble Cube by App or from User Input (Priority: P1)
 
-At the EO step a competitor finds many edge orientations variations on every cube axes. They save each as a
-variation, then move to DR. For each EO variation it tries to find DR, saves it or discards this EO. After checking several Eos he goes to next step.
+A competitor wants to start a new practice attempt. They either let the app generate
+a random WCA-compliant scramble for them, or they manually type in a specific scramble
+they want to practice. After the scramble is set, the app displays the resulting cube
+state and they can begin solving.
 
- After completing checking 
-several variantions they can scan all variations side by side and see the cumulative
-move count for each full path, and state of cube to so they can identify the best solution.
+**Why this priority**: Scramble setup is required before any solving can happen. Both
+input paths (generated and manual) are needed so users are not blocked by needing to
+source a scramble externally.
+
+**Independent Test**: A user can press a "Generate Scramble" button and receive a valid
+random scramble that sets the cube state, without typing anything.
+
+**Acceptance Scenarios**:
+
+1. **Given** an empty session, **When** the user presses "Generate Scramble",
+   **Then** the app produces a valid random WCA scramble, displays it in move notation,
+   and shows the resulting cube state.
+2. **Given** an empty session, **When** the user types a valid WCA scramble string and
+   confirms it, **Then** the app displays the scrambled cube state and enables solving.
+3. **Given** a scramble has been set, **When** the user presses "Generate Scramble"
+   again, **Then** a confirmation is shown before replacing the existing scramble and
+   discarding any entered moves.
+
+---
+
+### User Story 3 - Save and View Multiple Variations Per Step (Priority: P2)
+
+At the EO step a competitor finds several edge orientation variations on different cube
+axes. They save each as a variation, then move to DR. For each EO variation they try to
+find a DR continuation, and save or discard it. After checking several EOs they scan all
+variations side by side and see the cumulative move count for each full path and the
+cube state at each step, so they can identify the best solution.
 
 **Why this priority**: FMC solving is fundamentally exploratory. Without branching
 and variation management the tool is just a notepad.
 
 **Independent Test**: A user can save two different EO variations and compare their
-move counts without needing NISS or any step beyond EO.
+move counts without needing any step beyond EO.
 
 **Acceptance Scenarios**:
 
@@ -61,41 +93,7 @@ move counts without needing NISS or any step beyond EO.
    count displayed.
 2. **Given** multiple variations exist for a step, **When** the user selects one,
    **Then** the subsequent step input starts from that variation's resulting cube state.
-3. **Given** variations exist across multiple steps, **When** the user views the
-   solution overview, **Then** each full path (one variation per step) shows its
-   total move count.
-4. **Given** a variation has been saved, **When** the user deletes it, **Then** any
-   downstream step variations that depended on it are also removed, with a
-   confirmation prompt shown first.
 
----
-
-### User Story 3 - NISS: Switch Between Normal and Inverse Scramble (Priority: P3)
-
-During DR a competitor wants to continue on the inverse scramble to find a shorter
-continuation. They toggle the NISS switch. From that point moves are recorded in
-inverse context. When viewing the full solution the app displays the skeleton in
-standard NISS notation, clearly marking which moves are on the inverse scramble.
-
-**Why this priority**: NISS is the single technique most responsible for short FMC
-solutions at competitive level. The first version is explicitly required to support it.
-
-**Independent Test**: A user can toggle NISS context mid-sequence, enter moves in
-inverse context, toggle back, and view the resulting skeleton with normal/inverse
-moves correctly separated and labeled — without needing variations or multiple steps.
-
-**Acceptance Scenarios**:
-
-1. **Given** a step is active with a non-empty move sequence, **When** the user
-   activates NISS, **Then** subsequent moves are tagged as inverse-scramble context
-   and visually distinguished (e.g., shown in parentheses or different color).
-2. **Given** NISS is active, **When** the user deactivates NISS, **Then** subsequent
-   moves return to normal-scramble context; previously entered inverse moves remain.
-3. **Given** a solution skeleton containing both normal and inverse moves, **When**
-   the user views the solution display, **Then** inverse moves are shown inside
-   parentheses following WCA NISS notation convention.
-4. **Given** a NISS skeleton, **When** the user checks the move count, **Then** the
-   count reflects the total of all normal and inverse moves combined.
 
 ---
 
@@ -105,7 +103,6 @@ moves correctly separated and labeled — without needing variations or multiple
 - How does the system handle a move sequence that leaves EO unsolved when advancing to DR?
 - What if a variation is saved with 0 moves (empty continuation)?
 - What is the maximum number of variations per step the system must support?
-- What happens when the user toggles NISS at the very first move of a step (no prior normal moves)?
 
 ## Requirements *(mandatory)*
 
@@ -113,25 +110,23 @@ moves correctly separated and labeled — without needing variations or multiple
 
 - **FR-001**: The system MUST accept a WCA-notation scramble string as the starting
   state for a session.
-- **FR-002**: The system MUST support move input via on-screen buttons for the 18
+- **FR-002**: The system MUST be able to generate a random valid WCA scramble.
+- **FR-003**: The system MUST support move input via on-screen buttons for the 18
   standard face moves (U U' U2, D D' D2, L L' L2, R R' R2, F F' F2, B B' B2).
-- **FR-003**: The system MUST support move input via hardware keyboard on desktop
+- **FR-004**: The system MUST support move input via hardware keyboard on desktop
   using conventional key bindings.
-- **FR-004**: The system MUST display the current cube state after every move input.
-- **FR-005**: The system MUST support the following named solving steps in order:
+- **FR-005**: The system MUST display the current cube state after every move input.
+- **FR-006**: The system MUST support the following named solving steps in order:
   Edge Orientation (EO), Domino Reduction (DR), Half-Turn Reduction (HTR),
   Floppy Reduction, Finish / Finish-to-Leave-Slice, Insertions.
-- **FR-006**: The system MUST allow the user to save a typed move sequence as a
+- **FR-007**: The system MUST allow the user to save a typed move sequence as a
   variation at any step.
-- **FR-007**: The system MUST display the move count for each saved variation and for
+- **FR-008**: The system MUST display the move count for each saved variation and for
   each complete solution path.
-- **FR-008**: The system MUST allow subsequent steps to be branched from any saved
+- **FR-009**: The system MUST allow subsequent steps to be branched from any saved
   variation.
-- **FR-009**: The system MUST allow the user to toggle NISS context (normal ↔ inverse
-  scramble) at any point during move input.
-- **FR-010**: The system MUST display solution skeletons with inverse-scramble moves
-  in parentheses per standard NISS notation.
-- **FR-011**: The system MUST support undo (remove last move) during move input.
+- **FR-010**: The system MUST support undo (remove last move) during move input.
+- **FR-011**: The system MUST display the solution in both formats described in Key Entities.
 - **FR-012**: The system MUST persist the current session in local browser storage so
   that a page refresh does not lose work.
 - **FR-013**: The system MUST function as a static web application requiring no
@@ -140,13 +135,25 @@ moves correctly separated and labeled — without needing variations or multiple
 ### Key Entities
 
 - **Session**: A single FMC attempt; contains one scramble and one solution tree.
-- **Scramble**: A WCA-notation string defining the starting cube state.
+- **Scramble**: A WCA-notation string defining the starting cube state; may be typed
+  by the user or generated by the app.
 - **Step**: A named solving phase (EO, DR, HTR, Floppy, Finish, Insertions).
-- **Variation**: A saved move sequence for a step; has a move count, a NISS-aware
-  move list, and may have child variations in subsequent steps.
-- **Move**: A single face turn (e.g., R, U', F2); tagged as normal or inverse context.
+- **Variation**: A saved move sequence for a step; has a move count, a move list, and
+  may have child variations in subsequent steps.
+- **Move**: A single face turn (e.g., R, U', F2).
 - **Solution Path**: A chain of one variation per step from EO to the final step;
   has a total move count.
+- **Solution Display**: A solution path is shown in two formats:
+  1. *Simple sequence* — all moves from all steps concatenated into a single flat
+     string (e.g., `F B R' U F' R2 L2 F' D' B F' R2 F' U2 L2 D2 B2 R2`).
+  2. *Step-by-step sequence* — moves grouped per step, with the step name, the move
+     count for that step, and the running total, following this format:
+     ```
+     F B R' // EO (3/3)
+     U F' R2 L2 F' D' // DR (6/9)
+     B F' R2 F' // HTR (4/13)
+     U2 L2 D2 B2 R2 // Finish (5/18)
+     ```
 
 ## Success Criteria *(mandatory)*
 
@@ -158,10 +165,10 @@ moves correctly separated and labeled — without needing variations or multiple
   perceptible performance degradation.
 - **SC-003**: The solution overview correctly shows the total move count for every
   complete path with no manual counting required by the user.
-- **SC-004**: A user on a 375px-wide mobile viewport can input moves, toggle NISS,
-  and save variations without horizontal scrolling or overlapping controls.
+- **SC-004**: A user on a 375px-wide mobile viewport can input moves and save
+  variations without horizontal scrolling or overlapping controls.
 - **SC-005**: After a page refresh, a user's in-progress session is fully restored
-  with all variations and NISS state intact.
+  with all variations intact.
 - **SC-006**: Invalid move input is rejected immediately with no perceptible delay
   and does not corrupt the cube state.
 
@@ -171,11 +178,17 @@ moves correctly separated and labeled — without needing variations or multiple
   not need to teach the method or explain steps.
 - A "session" maps to a single FMC attempt (one scramble); managing multiple
   sessions or a history of attempts is out of scope for v1.
-- The cube state display is a 2D representation (unfolded net or similar) adequate
-  for orientation checking; a full 3D interactive cube is out of scope for v1.
+- The cube state display is a 3D representation (unfolded net or similar) adequate
+  for orientation checking; 
 - Local browser storage is sufficient persistence for v1; cloud sync or account-based
   saving is out of scope.
 - The insertion step records move sequences textually; automatic cancellation
   calculation across the skeleton is out of scope for v1.
 - The app targets modern browsers (last 2 major versions of Chrome, Firefox, Safari)
   on both mobile and desktop.
+- **NISS (Normal Inverse Scramble Switching)** — the ability to toggle between normal
+  and inverse scramble context mid-sequence — is intentionally out of scope for this
+  feature. It will be delivered as a separate feature (planned as `002-niss-support`).
+  The data model (Variation, Move, Solution Path) should not preclude adding NISS
+  context tagging in a future iteration, but no NISS-specific UI or logic is required
+  here.
