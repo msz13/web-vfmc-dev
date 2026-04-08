@@ -15,7 +15,9 @@ refactor 001-fmc-solution-builder spec.md to
 
 
  analyse Data Model: FMC Solution Builder in @data-model.md and compare it to my proposition which is written as typsript interfaces and types. write pros and cons of my solution compring it to proposed i file. 
+ parsing and validation shoud be private methods
 
+'''
 type ID = number
 
 type Nisscontext = 'normal' | 'inverse' | 'undefined'
@@ -29,14 +31,44 @@ interface Subsequence {
   interface Sequence  {
     id: ID
     moves: Subsequence[];
+    moveCount: number;
     previousStepId: string;
   }
 
 type Step = 'EO' | 'DR'| 'HTR'
 
-type Session = {
+type SessionState = {
   steps: Map<Step, Sequence>;
   id: ID;
   datestart: Date;
 };
-  
+
+interface Variation {
+  step: Step  //current step
+  id: ID //sequence ID
+}
+
+
+
+interface Session {
+
+  start(): Variation 
+  newScramble(): Variation
+  addMove(step: Step, sequenceId: ID, move: string): void
+  updateSequence(step: Step, sequenceId: ID, moves: string): void
+  cubeState(): string // sequence to visalise scramble + solution 
+  saveSequence(): Variation //saves active sequence
+  getSolutionStepByStepForVariation(step: Step, sequenceId: ID): string // returns solution in step by step format
+  getStepVariations(step: Step): Sequence[]
+  getTotalMoveCount(step: Step, sequenceId: ID): number // returns totoal move count for sequence of given step and previous steps
+  getCurrentScramle(): string
+}
+
+//active solution contains, last step, and seqence id
+// on new session, or new step, it creates first(empty) sequence
+
+'''
+
+verify if session contians oall methods to implemenet solution ??
+
+
