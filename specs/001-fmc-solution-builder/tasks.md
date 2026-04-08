@@ -14,13 +14,13 @@
 
 **Purpose**: Bootstrap the SvelteKit project. The repository currently has no `src/` directory (see quickstart.md).
 
-- [ ] T001 Bootstrap SvelteKit project with TypeScript — run `npm create svelte@latest .` selecting minimal + TypeScript, then `npm install`
-- [ ] T002 Configure `@sveltejs/adapter-static` with `fallback: 'index.html'` — `svelte.config.js`
-- [ ] T003 [P] Configure Vitest with `environment: 'node'` and `include: ['src/**/*.test.ts']` — `vite.config.ts`
-- [ ] T004 [P] Install `@cubing/cubing` — `package.json`
-- [ ] T005 [P] Scaffold `src/lib/domain/` and `src/lib/components/` directory stubs — `src/`
-- [ ] T006 [P] Create CI workflow: install + `vitest run` on every push/PR — `.github/workflows/ci.yml`
-- [ ] T007 [P] Create deploy workflow: manual trigger, static build with `BASE_PATH`, push to `msz13/web_vfmc` — `.github/workflows/deploy.yml`
+- [X] T001 Bootstrap SvelteKit project with TypeScript — run `npm create svelte@latest .` selecting minimal + TypeScript, then `npm install`
+- [X] T002 Configure `@sveltejs/adapter-static` with `fallback: 'index.html'` — `svelte.config.js`
+- [X] T003 [P] Configure Vitest with `environment: 'node'` and `include: ['src/**/*.test.ts']` — `vite.config.ts`
+- [X] T004 [P] Install `cubing` (package name on npm) — `package.json`
+- [X] T005 [P] Scaffold `src/lib/domain/` and `src/lib/components/` directory stubs — `src/`
+- [X] T006 [P] Create CI workflow: install + `vitest run` on every push/PR — `.github/workflows/ci.yml`
+- [X] T007 [P] Create deploy workflow: manual trigger, static build with `BASE_PATH`, push to `msz13/web_vfmc` — `.github/workflows/deploy.yml`
 
 ---
 
@@ -30,12 +30,12 @@
 
 **⚠️ CRITICAL**: All domain modules need `types.ts` before any story implementation.
 
-- [ ] T008 Write shared type definitions: `ID`, `Step`, `STEP_ORDER`, `Move`, `Sequence`, `SessionState` — `src/lib/domain/types.ts`
-- [ ] T009 [P] Write failing tests for `computeCubeState` and `isValidScramble` (valid scramble returns 54-element array; invalid throws) — `src/lib/domain/cube.test.ts`
-- [ ] T010 [P] Write failing tests for `ParseError` construction and move validation regex `^[UDLRFB][2']?$` — `src/lib/domain/session.test.ts`
-- [ ] T011 Implement `computeCubeState(scramble, moves): CubeState` and `isValidScramble(scramble): boolean` wrapping `@cubing/cubing` — `src/lib/domain/cube.ts`
-- [ ] T012 Implement `persistence.ts`: `loadSession()`, `saveSession(session)`, `clearSession()` using key `vfmc_session_v1`; return `null` on missing or corrupted data — `src/lib/domain/persistence.ts`
-- [ ] T013 Create empty SPA shell with `<slot>` placeholder — `src/routes/+page.svelte` and `src/app.html`
+- [X] T008 Write shared type definitions: `ID`, `Step`, `STEP_ORDER`, `Move`, `Sequence`, `SessionState` — `src/lib/domain/types.ts`
+- [X] T009 [P] Write failing tests for `computeCubeState` and `isValidScramble` (valid scramble returns 54-element array; invalid throws) — `src/lib/domain/cube.test.ts`
+- [X] T010 [P] Write failing tests for `ParseError` construction and move validation regex `^[UDLRFB][2']?$` — `src/lib/domain/session.test.ts`
+- [X] T011 Implement `computeCubeState(scramble, moves): CubeState` and `isValidScramble(scramble): boolean` wrapping `cubing` — `src/lib/domain/cube.ts`
+- [X] T012 Implement `persistence.ts`: `loadSession()`, `saveSession(session)`, `clearSession()` using key `vfmc_session_v1`; return `null` on missing or corrupted data — `src/lib/domain/persistence.ts`
+- [X] T013 Create empty SPA shell with `<slot>` placeholder — `src/routes/+page.svelte` and `src/app.html`
 
 **Checkpoint**: `npx vitest run` passes. Foundation ready — all user story phases can proceed.
 
@@ -49,15 +49,15 @@
 
 ### Tests (write first — must fail before implementation)
 
-- [ ] T014 [P] [US2] Add failing tests for `setScramble` (accepts valid, throws `ParseError` on invalid) and `generateScramble` (returns non-empty string), `getAllSteps` (returns `STEP_ORDER`), `nextStep` ('EO'→'DR', 'Finish'→null) — `src/lib/domain/session.test.ts`
+- [X] T014 [P] [US2] Add failing tests for `setScramble` (accepts valid, throws `ParseError` on invalid) and `generateScramble` (returns non-empty string), `getAllSteps` (returns `STEP_ORDER`), `nextStep` ('EO'→'DR', 'Finish'→null) — `src/lib/domain/session.test.ts`
 
 ### Implementation
 
-- [ ] T015 [US2] Implement `src/lib/domain/scramble.ts`: async `generateScramble(): Promise<string>` wrapping `@cubing/cubing/scramble` — `src/lib/domain/scramble.ts`
-- [ ] T016 [US2] Implement `Session` class constructor, `setScramble`, `generateScramble`, `getAllSteps`, `nextStep`, `loadSession`, `saveSession`, `clearSession`; private `parseMove` and `parseMoveSequence` — `src/lib/domain/session.ts`
-- [ ] T017 [P] [US2] Implement `ScrambleInput.svelte`: text field + "Generate Scramble" button + confirmation dialog on replace + inline error on invalid input — `src/lib/components/ScrambleInput.svelte`
-- [ ] T018 [P] [US2] Implement `CubeDisplay.svelte`: `TwistyPlayer` wrapper accepting a move string; renders 3D cube state — `src/lib/components/CubeDisplay.svelte`
-- [ ] T019 [US2] Wire `ScrambleInput` + `CubeDisplay` into page; call `session.setScramble` / `session.generateScramble`; pass `session.getActiveSolution()` to `CubeDisplay` — `src/routes/+page.svelte`
+- [X] T015 [US2] Implement `src/lib/domain/scramble.ts`: async `generateScramble(): Promise<string>` wrapping `cubing/scramble` — `src/lib/domain/scramble.ts`
+- [X] T016 [US2] Implement `Session` class constructor, `setScramble`, `generateScramble`, `getAllSteps`, `nextStep`, `loadSession`, `saveSession`, `clearSession`; private `parseMove` and `parseMoveSequence` — `src/lib/domain/session.ts`
+- [X] T017 [P] [US2] Implement `ScrambleInput.svelte`: text field + "Generate Scramble" button + confirmation dialog on replace + inline error on invalid input — `src/lib/components/ScrambleInput.svelte`
+- [X] T018 [P] [US2] Implement `CubeDisplay.svelte`: `TwistyPlayer` wrapper accepting a move string; renders 3D cube state — `src/lib/components/CubeDisplay.svelte`
+- [X] T019 [US2] Wire `ScrambleInput` + `CubeDisplay` into page; call `session.setScramble` / `session.generateScramble`; pass `session.getActiveSolution()` to `CubeDisplay` — `src/routes/+page.svelte`
 
 **Checkpoint**: Scramble setup fully functional. Cube displays scrambled state on both input paths.
 
@@ -71,14 +71,14 @@
 
 ### Tests (write first — must fail before implementation)
 
-- [ ] T020 [P] [US1] Add failing tests for `addMove` (appends valid move, throws on invalid), `undoMove` (removes last, no-op on empty), `getActiveSolution` (scramble + active moves flat), `getActiveSolutionStepByStep` (saved steps + currentInput as last line with running totals), `setActiveStep` — `src/lib/domain/session.test.ts`
+- [X] T020 [P] [US1] Add failing tests for `addMove` (appends valid move, throws on invalid), `undoMove` (removes last, no-op on empty), `getActiveSolution` (scramble + active moves flat), `getActiveSolutionStepByStep` (saved steps + currentInput as last line with running totals), `setActiveStep` — `src/lib/domain/session.test.ts`
 
 ### Implementation
 
-- [ ] T021 [US1] Implement `Session.addMove`, `Session.undoMove`, `Session.getActiveSolution`, `Session.getActiveSolutionStepByStep`, `Session.setActiveStep` — `src/lib/domain/session.ts`
-- [ ] T022 [P] [US1] Implement `MoveInput.svelte`: 18 face-move buttons (≥44×44px, mobile-first) + keyboard state machine per `contracts/keyboard-bindings.md` (two-keypress: face then modifier; `Backspace` in IDLE = undo, in PENDING = cancel; `Enter` = save) — `src/lib/components/MoveInput.svelte`
-- [ ] T023 [P] [US1] Implement `SolutionView.svelte`: step-by-step format (`{moves} // {step} ({count}/{total})`); current `currentInput` line visually distinguished (dimmed/italic); simple flat sequence — `src/lib/components/SolutionView.svelte`
-- [ ] T024 [US1] Wire `MoveInput` + `SolutionView` + real-time `CubeDisplay` into page; connect `addMove`, `undoMove`, `setActiveStep`; reactive updates after every move — `src/routes/+page.svelte`
+- [X] T021 [US1] Implement `Session.addMove`, `Session.undoMove`, `Session.getActiveSolution`, `Session.getActiveSolutionStepByStep`, `Session.setActiveStep` — `src/lib/domain/session.ts`
+- [X] T022 [P] [US1] Implement `MoveInput.svelte`: 18 face-move buttons (≥44×44px, mobile-first) + keyboard state machine per `contracts/keyboard-bindings.md` (two-keypress: face then modifier; `Backspace` in IDLE = undo, in PENDING = cancel; `Enter` = save) — `src/lib/components/MoveInput.svelte`
+- [X] T023 [P] [US1] Implement `SolutionView.svelte`: step-by-step format (`{moves} // {step} ({count}/{total})`); current `currentInput` line visually distinguished (dimmed/italic); simple flat sequence — `src/lib/components/SolutionView.svelte`
+- [X] T024 [US1] Wire `MoveInput` + `SolutionView` + real-time `CubeDisplay` into page; connect `addMove`, `undoMove`, `setActiveStep`; reactive updates after every move — `src/routes/+page.svelte`
 
 **Checkpoint**: Full single-path move input works. Cube updates in real time. Step-by-step display shows unsaved current line. Undo works from both button and keyboard.
 
@@ -92,13 +92,13 @@
 
 ### Tests (write first — must fail before implementation)
 
-- [ ] T025 [P] [US3] Add failing tests for `saveSequence` (creates Sequence with correct `parentId`, sets `activeSequenceIds`, clears `currentInput`), `getStepVariations` (returns sequences filtered by active parent; all for EO), `setActiveSolution` (updates `activeSequenceIds`, clears subsequent steps) — `src/lib/domain/session.test.ts`
+- [X] T025 [P] [US3] Add failing tests for `saveSequence` (creates Sequence with correct `parentId`, sets `activeSequenceIds`, clears `currentInput`), `getStepVariations` (returns sequences filtered by active parent; all for EO), `setActiveSolution` (updates `activeSequenceIds`, clears subsequent steps) — `src/lib/domain/session.test.ts`
 
 ### Implementation
 
-- [ ] T026 [US3] Implement `Session.saveSequence`, `Session.getStepVariations`, `Session.setActiveSolution` — `src/lib/domain/session.ts`
-- [ ] T027 [P] [US3] Implement `VariationList.svelte`: lists sequences for current step labeled `{stepName} #{index}` with move count; highlights active; click calls `setActiveSolution` — `src/lib/components/VariationList.svelte`
-- [ ] T028 [US3] Wire `VariationList` into page; connect `saveSequence` to "Save" button and `Enter` key; handle step switching with `setActiveStep`; update `CubeDisplay` from `getActiveSolution()` on selection — `src/routes/+page.svelte`
+- [X] T026 [US3] Implement `Session.saveSequence`, `Session.getStepVariations`, `Session.setActiveSolution` — `src/lib/domain/session.ts`
+- [X] T027 [P] [US3] Implement `VariationList.svelte`: lists sequences for current step labeled `{stepName} #{index}` with move count; highlights active; click calls `setActiveSolution` — `src/lib/components/VariationList.svelte`
+- [X] T028 [US3] Wire `VariationList` into page; connect `saveSequence` to "Save" button and `Enter` key; handle step switching with `setActiveStep`; update `CubeDisplay` from `getActiveSolution()` on selection — `src/routes/+page.svelte`
 
 **Checkpoint**: Multiple variations saved and listed per step. Selecting a variation updates the active path and cube state. Step-by-step display reflects selected path.
 

@@ -1,0 +1,35 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npx vitest run
+
+      - name: Build static site
+        run: npm run build
+        env:
+          BASE_PATH: /web_vfmc
+
+      - name: Deploy to msz13/web_vfmc
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.DEPLOY_PAT }}
+          external_repository: msz13/web_vfmc
+          publish_branch: gh-pages
+          publish_dir: ./build
