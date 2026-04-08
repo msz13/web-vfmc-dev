@@ -10,4 +10,33 @@ refactor 001-fmc-solution-builder spec.md to
    U F'^ R2 L2 F' D' // DR 2c3 2e (6/9) 
    B F' R2 F' // HTR (4/13) 
    U2 L2 D2 B2 R2 // Finish (5/18)
-   """ 
+   """
+
+
+
+ analyse Data Model: FMC Solution Builder in @data-model.md and compare it to my proposition which is written as typsript interfaces and types. write pros and cons of my solution compring it to proposed i file. 
+
+type ID = number
+
+type Nisscontext = 'normal' | 'inverse' | 'undefined'
+
+
+interface Subsequence {
+    moves: string
+    nissContext: string
+}
+
+  interface Sequence  {
+    id: ID
+    moves: Subsequence[];
+    previousStepId: string;
+  }
+
+type Step = 'EO' | 'DR'| 'HTR'
+
+type Session = {
+  steps: Map<Step, Sequence>;
+  id: ID;
+  datestart: Date;
+};
+  
