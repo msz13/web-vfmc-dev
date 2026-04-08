@@ -12,162 +12,155 @@ All domain modules live under `src/lib/domain/`. They are plain TypeScript with 
 Shared type definitions for all domain modules.
 
 ```typescript
-export type StepName = 'EO' | 'DR' | 'HTR' | 'Floppy' | 'Finish' | 'Insertions';
+export type ID = string; // UUID v4
 
-export const STEP_ORDER: StepName[] = ['EO', 'DR', 'HTR', 'Floppy', 'Finish', 'Insertions'];
+export type Step = 'EO' | 'DR' | 'HTR' | 'Floppy' | 'Finish';
+// Insertions deferred to feature 002
+
+export const STEP_ORDER: Step[] = ['EO', 'DR', 'HTR', 'Floppy', 'Finish'];
 
 export interface Move {
-  notation: string;             // e.g. "R", "U'", "F2"
+  notation: string;              // e.g. "R", "U'", "F2"
   nissContext?: 'normal' | 'inverse'; // reserved for feature 002, always undefined here
 }
 
-export interface Variation {
-  id: string;
-  stepName: StepName;
+export interface Sequence {
+  id: ID;
+  stepName: Step;
   moves: Move[];
-  children: Variation[];        // variations for the next step
+  parentId: ID | null;           // null for EO sequences
 }
 
-export interface Session {
-  id: string;
+export interface SessionState {
+  id: ID;
   scramble: string;
-  rootVariations: Variation[];  // EO-level variations
-  createdAt: number;            // Unix ms
-  updatedAt: number;            // Unix ms
-}
-
-export interface SolutionPath {
-  variations: Variation[];      // one per step, in order
-  totalMoveCount: number;
+  sequences: Sequence[];                          // all saved sequences, flat list
+  activeSequenceIds: Partial<Record<Step, ID>>;   // selected sequence per step
+  activeStep: Step;
+  currentInput: Move[];                           // unsaved moves being typed
+  createdAt: number;             // Unix ms
+  updatedAt: number;             // Unix ms
 }
 ```
-
----
-
-## `src/lib/domain/moves.ts`
-
-Move notation parsing and validation.
-
-```typescript
-/**
- * Returns true if `notation` is a valid WCA face move (e.g. "R", "U'", "F2").
- */
-export function isValidMove(notation: string): boolean
-
-/**
- * Parses a space-separated WCA move sequence string into Move[].
- * Throws ParseError if any token is invalid.
- */
-export function parseMoveSequence(sequence: string): Move[]
-
-/**
- * Formats Move[] back to a space-separated notation string.
- */
-export function formatMoves(moves: Move[]): string
-```
-
-**Errors**:
-- `ParseError extends Error` — thrown when a token does not match `^[UDLRFB][2']?$`
 
 ---
 
 ## `src/lib/domain/session.ts`
 
-Session and variation tree operations. All functions are pure (no side effects).
+The `Session` class is the single entry point for all domain operations. It holds a `SessionState` and exposes methods for the UI layer. Parsing and validation are handled internally — not exposed publicly.
 
 ```typescript
-/**
- * Creates a new Session from a scramble string.
- * Throws ParseError if scramble is not valid WCA notation.
- */
-export function createSession(scramble: string): Session
+export class Session {
 
-/**
- * Returns all Variations at `stepName` reachable via `parentPath`.
- * `parentPath` is a list of Variation IDs from EO root to the parent step.
- * For EO (no parent), pass an empty array.
- */
-export function getVariationsForStep(
-  session: Session,
-  stepName: StepName,
-  parentPath: string[]
-): Variation[]
+  /**
+   * Starts a new session with the given scramble string.
+   * Throws ParseError if scramble is not valid WCA notation.
+   * Replaces any existing session state.
+   */
+  setScramble(scramble: string): void
 
-/**
- * Saves a new Variation under the given parent (identified by parentId).
- * For EO variations, parentId is null.
- * Returns a new Session (immutable update).
- * Throws if parentId is not found or stepName is not the correct next step.
- */
-export function saveVariation(
-  session: Session,
-  parentId: string | null,
-  stepName: StepName,
-  moves: Move[]
-): Session
+  /**
+   * Starts a new session with a randomly generated WCA scramble.
+   * Async because cubing.js scramble generation is async.
+   * Replaces any existing session state.
+   */
+  async generateScramble(): Promise<void>
 
-/**
- * Returns all complete SolutionPaths in the session tree (leaf-to-root traversal).
- */
-export function getSolutionPaths(session: Session): SolutionPath[]
+  /**
+   * Returns all steps in order (STEP_ORDER).
+   */
+  getAllSteps(): Step[]
 
-/**
- * Returns the next StepName after the given step, or null if at Insertions.
- */
-export function nextStep(stepName: StepName): StepName | null
+  /**
+   * Returns the next Step after the given step, or null if at 'Finish'.
+   */
+  nextStep(step: Step): Step | null
 
-/**
- * Returns cumulative move count along a path of Variations.
- */
-export function cumulativeMoveCount(path: Variation[]): number
+  /**
+   * Returns all saved sequences for the given step whose parentId matches
+   * the currently active sequence of the preceding step.
+   * For 'EO', returns all sequences with parentId === null.
+   * Each sequence is labeled by step name and its index in the returned list.
+   */
+  getStepVariations(step: Step): Sequence[]
+
+  /**
+   * Sets the active step (the step currently being edited).
+   */
+  setActiveStep(step: Step): void
+
+  /**
+   * Appends a single move notation (e.g. "R", "U'") to currentInput.
+   * Throws ParseError if the notation is invalid.
+   */
+  addMove(move: string): void
+
+  /**
+   * Removes the last move from currentInput (undo).
+   * No-op if currentInput is empty.
+   */
+  undoMove(): void
+
+  /**
+   * Saves currentInput as a new Sequence for activeStep, linked to the
+   * active sequence of the preceding step via parentId.
+   * Sets activeSequenceIds[activeStep] to the new sequence's id.
+   * Clears currentInput.
+   */
+  saveSequence(): void
+
+  /**
+   * Selects a saved sequence as the active one for the given step.
+   * Clears activeSequenceIds for all subsequent steps (path invalidated).
+   */
+  setActiveSolution(step: Step, sequenceId: ID): void
+
+  /**
+   * Returns the active solution as a flat move string for visualisation:
+   * scramble + all moves from active sequences in step order.
+   * Example: "R U F' ... R2 U2 F2"
+   */
+  getActiveSolution(): string
+
+  /**
+   * Returns the active solution in step-by-step format.
+   * Each step on a new line with step name, step move count, and cumulative count.
+   * Example:
+   *   F B R' // EO (3/3)
+   *   U F' R2 L2 F' D' // DR (6/9)
+   *   B F' R2 F' // HTR (4/13)
+   *   U2 L2 D2 B2 R2 // Finish (5/18)
+   * Only includes steps with an active sequence selected.
+   */
+  getActiveSolutionStepByStep(): string
+
+  /**
+   * Loads session state from localStorage. Returns null if none found or data is corrupted.
+   * Replaces current in-memory state with the loaded state.
+   */
+  loadSession(): SessionState | null
+
+  /**
+   * Persists current session state to localStorage.
+   */
+  saveSession(): void
+
+  /**
+   * Clears the stored session from localStorage and resets in-memory state.
+   */
+  clearSession(): void
+}
 ```
 
----
+**Private methods** (not exposed; internal implementation detail):
+- `parseMove(notation: string): Move` — validates and constructs a Move; throws `ParseError`
+- `parseMoveSequence(sequence: string): Move[]` — tokenises and validates a full sequence string
+- `formatMoves(moves: Move[]): string` — serialises Move[] to space-separated notation
 
-## `src/lib/domain/cube.ts`
-
-Cube state computation. Wraps `@cubing/cubing`; isolates library dependency to this module.
-
-```typescript
-/**
- * Applies a sequence of moves (on top of scramble) and returns a 54-element
- * sticker array representing the cube state.
- * Index mapping follows WCA face order: U(0-8), R(9-17), F(18-26), D(27-35), L(36-44), B(45-53).
- */
-export function computeCubeState(
-  scramble: string,
-  moves: Move[]
-): CubeState
-
-/**
- * 54-element array of face colour identifiers.
- * Values: 'U' | 'R' | 'F' | 'D' | 'L' | 'B' (which face the sticker belongs to in the solved state).
- */
-export type CubeState = string[]
-
-/**
- * Validates a scramble string using cubing.js Alg parser.
- * Returns true if valid.
- */
-export function isValidScramble(scramble: string): boolean
-```
+**Errors**:
+- `ParseError extends Error` — thrown when a move token does not match `^[UDLRFB][2']?$` or a scramble is invalid
 
 ---
-
-## `src/lib/domain/scramble.ts`
-
-Scramble generation. Wraps `@cubing/cubing/scramble`.
-
-```typescript
-/**
- * Generates a random WCA-compliant FMC scramble.
- * Returns a promise (cubing.js scramble generation is async).
- */
-export async function generateScramble(): Promise<string>
-```
-
----
-
 ## `src/lib/domain/persistence.ts`
 
 LocalStorage read/write. This module is the ONLY domain module allowed to touch `localStorage`.
@@ -191,5 +184,3 @@ export function saveSession(session: Session): void
  */
 export function clearSession(): void
 ```
-
-**Note**: `persistence.ts` imports `localStorage` (a browser global). It MUST NOT be imported in Vitest domain tests; those tests operate on pure functions. Test coverage for persistence is via manual browser verification.

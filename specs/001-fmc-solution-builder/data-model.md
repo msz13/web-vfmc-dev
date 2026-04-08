@@ -22,70 +22,75 @@ A single face turn in WCA notation.
 
 ---
 
-### StepName
+### Step
 
 Enumeration of FMC solving phases in order.
 
 ```
-'EO' | 'DR' | 'HTR' | 'Floppy' | 'Finish' | 'Insertions'
+'EO' | 'DR' | 'HTR' | 'Floppy' | 'Finish'
 ```
 
-Step order is fixed; a Variation's `stepName` determines its depth in the solution tree.
+`Insertions` is deferred to feature 002. Step order is fixed and determines the sequence of solving phases.
+
+```typescript
+const STEP_ORDER: Step[] = ['EO', 'DR', 'HTR', 'Floppy', 'Finish']
+```
 
 ---
 
-### Variation
+### Sequence
 
-A saved move sequence for one solving step; may have child Variations in the next step.
+A saved move sequence for one solving step, linked to the active sequence of the preceding step.
 
 | Field | Type | Notes |
 |---|---|---|
 | `id` | `string` | UUID v4, `crypto.randomUUID()` |
-| `stepName` | `StepName` | Which solving phase this variation belongs to |
+| `stepName` | `Step` | Which solving phase this sequence belongs to |
 | `moves` | `Move[]` | Ordered list of moves entered for this step |
-| `children` | `Variation[]` | Variations for the next step, branching from this variation's end state |
+| `parentId` | `string \| null` | ID of the active Sequence in the previous step; `null` for EO sequences |
 
 **Derived values** (not stored; computed on read):
 - `moveCount`: `moves.length`
-- `cumulativeCount`: sum of `moveCount` along the path from the session root to this variation
+- `cumulativeCount`: sum of `moveCount` along the active path from EO to this sequence
 
 **Constraints**:
-- `children` MUST contain only Variations whose `stepName` is the next step after this variation's `stepName`.
-- An empty `moves` array is valid (zero-move continuation is allowed per edge case in spec).
-- A variation MAY have zero `children` (leaf node = end of solution path).
+- `parentId` MUST reference a Sequence whose `stepName` is the step immediately before this sequence's `stepName`, or be `null` for EO.
+- An empty `moves` array is valid (zero-move continuation is allowed).
 
 ---
 
-### Session
+### SessionState
 
-A single FMC practice attempt.
+A single FMC practice attempt. Stored in localStorage.
 
 | Field | Type | Notes |
 |---|---|---|
 | `id` | `string` | UUID v4 |
 | `scramble` | `string` | WCA notation string; non-empty |
-| `rootVariations` | `Variation[]` | EO-level variations (children of the implicit root) |
-
+| `sequences` | `Sequence[]` | All saved sequences across all steps (flat list) |
+| `activeSequenceIds` | `Partial<Record<Step, string>>` | Which saved sequence is currently selected per step |
+| `activeStep` | `Step` | The step currently being edited |
+| `currentInput` | `Move[]` | Unsaved moves being typed for the active step |
+| `createdAt` | `number` | Unix ms |
+| `updatedAt` | `number` | Unix ms |
 
 **Constraints**:
 - `scramble` MUST be a valid WCA move sequence (parseable by cubing.js `Alg.fromString`).
-- `rootVariations` contains only Variations with `stepName === 'EO'`.
-- At most one Session exists in the application at a time (v1 scope).
+- `sequences` contains only Sequences whose `stepName` is `'EO'` when `parentId === null`.
+- `activeSequenceIds[step]` MUST reference an existing `id` in `sequences` if set.
+- At most one SessionState exists in the application at a time (v1 scope).
 
 ---
 
-### SolutionPath
+### Active Path
 
-A chain of one Variation per step from EO to the final step. Not stored; derived by traversing the tree.
+The sequence of selected Sequences forming the current solution. Not stored; derived from `activeSequenceIds`.
 
-| Field | Type | Notes |
-|---|---|---|
-| `variations` | `Variation[]` | Ordered from EO to last step (1–6 items) |
-| `totalMoveCount` | `number` | Sum of `moveCount` for each variation in the path |
+For each step in `STEP_ORDER`, if `activeSequenceIds[step]` is set, the corresponding Sequence is included in the active path.
 
 **Display formats** (FR-011):
 
-*Simple*: All moves from all variations concatenated:
+*Simple*: All moves from all active sequences concatenated:
 ```
 F B R' U F' R2 L2 F' D' B F' R2 F' U2 L2 D2 B2 R2
 ```
@@ -105,22 +110,33 @@ Format: `{moves} // {stepName} ({stepCount}/{runningTotal})`
 
 ### Session lifecycle
 ```
-[empty] → scramble entered/generated → [scramble set, no variations]
-         → EO moves typed → [active input]
-         → variation saved → [variation exists]
-         → variation selected → [new step active input]
-         → ... → [solution path complete]
+[empty] → setScramble / generateScramble → [scramble set, activeStep = 'EO', currentInput = []]
+        → addMove → [currentInput grows]
+        → saveSequence → [Sequence added, currentInput cleared, activeSequenceIds['EO'] set]
+        → setActiveStep('DR') → [activeStep = 'DR', currentInput = []]
+        → addMove → ... → saveSequence → [DR Sequence added under active EO]
+        → ... → [active path complete through 'Finish']
 ```
 
-### Variation save
+### Sequence save
 ```
-[active input: moves typed] → user saves → Variation added to parent's children[]
-                             → active input cleared for next entry
+[currentInput: moves typed] → saveSequence →
+  new Sequence { id, stepName: activeStep, moves: currentInput, parentId: activeSequenceIds[previousStep] }
+  appended to sequences[]
+  activeSequenceIds[activeStep] set to new sequence's id
+  currentInput cleared
+```
+
+### Variation selection
+```
+[multiple sequences for a step] → setActiveSolution(step, id) →
+  activeSequenceIds[step] = id
+  activeSequenceIds for all subsequent steps cleared (path invalidated)
 ```
 
 ### Undo
 ```
-[active input: N moves] → backspace → [active input: N-1 moves]
+[currentInput: N moves] → backspace → [currentInput: N-1 moves]
                         (if N = 0, no-op)
 ```
 
@@ -137,6 +153,10 @@ Value: JSON-serialised `Session | null`
 
 ---
 
-## NISS Future-Proofing Notes
+## Future Feature Notes
 
-The `Move.nissContext` field is intentionally defined but unused in this feature. It allows feature 002 (NISS support) to tag individual moves or variation segments as belonging to the inverse scramble context without restructuring the core tree. No NISS-specific fields are added to `Session` or `Variation` at this time.
+### Insertions (feature 002)
+`Insertions` is removed from `Step` in this feature. Adding it in feature 002 requires only extending the `Step` union and `STEP_ORDER` array — no structural change to `SessionState` or `Sequence`.
+
+### NISS (feature 002)
+`Move.nissContext` is intentionally defined but unused. It allows feature 002 to tag individual moves as belonging to the inverse scramble context without restructuring the data model.

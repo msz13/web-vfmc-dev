@@ -14,18 +14,19 @@ refactor 001-fmc-solution-builder spec.md to
 
 
 
- analyse Data Model: FMC Solution Builder in @data-model.md and compare it to my proposition which is written as typsript interfaces and types. write pros and cons of my solution compring it to proposed i file. 
+ analyse domain-api and data model for  FMC Solution Builder in @data-model.md. compare it to my proposition which is written as typsript interfaces and types. write pros and cons of my solution compring it to proposed in @data-mode.md and @domain-api.md. verify if contians oll methods to implemenet solution.
  parsing and validation shoud be private methods
 
 '''
+
 type ID = number
 
-type Nisscontext = 'normal' | 'inverse' | 'undefined'
+type Nisscontext = 'normal' | 'inverse' | undefined
 
 
 interface Subsequence {
     moves: string
-    nissContext: string
+    nissContext: NissContext
 }
 
   interface Sequence  {
@@ -35,40 +36,41 @@ interface Subsequence {
     previousStepId: string;
   }
 
-type Step = 'EO' | 'DR'| 'HTR'
+type Step = 'EO' | 'DR' | 'HTR' | 'Floppy' | 'Finish' | 
 
 type SessionState = {
+  scramble: string
   steps: Map<Step, Sequence>;
   id: ID;
-  datestart: Date;
+  datestart: number;
 };
 
-interface Variation {
-  step: Step  //current step
-  id: ID //sequence ID
-}
 
+refactor @spec.md @domain-api.md and data-model.md based on my Session interface and comments on methods. user only needs see solution with active step sequence and it's parents sequnces form previous steps, not all children variotions. insertations step should be implemented in nex feature. 
 
 
 interface Session {
 
-  start(): Variation 
-  newScramble(): Variation
-  addMove(step: Step, sequenceId: ID, move: string): void
-  updateSequence(step: Step, sequenceId: ID, moves: string): void
-  cubeState(): string // sequence to visalise scramble + solution 
-  saveSequence(): Variation //saves active sequence
-  getSolutionStepByStepForVariation(step: Step, sequenceId: ID): string // returns solution in step by step format
-  getStepVariations(step: Step): Sequence[]
-  getTotalMoveCount(step: Step, sequenceId: ID): number // returns totoal move count for sequence of given step and previous steps
-  getCurrentScramle(): string
+  setScramble(scramble: string ) // start new session for given scramble
+  generateScramble(): void // start new session with generated scramble
+  getActiveSolutionStepByStep(): string // returns solution in format: every sequence for given step in //new line with comment containg step name and move count for sequence and cumulative move count
+  getActiveSolution(): string //returns move sequence containing scramble + solution needed for visualisation 
+  getAllSteps(): Step[] //returns list of all steps
+  nextStep(stepName: Step): Step | null
+  getStepVariations(step: Step): Sequence[] // list all variations of sequences for given step labbeled with by step name and its index in list of sequnces for given step
+  setActiveStep(step: Step): void
+  addMove(move: string): void //adds move to active solution
+  saveSequence(): void //saves active active solution
+  setActiveSolution(step: Step, sequenceId:ID): void
+  loadSession():Session | null 
+  saveSession(): void
+  clearSession(): void    
+ 
 }
 
-//active solution contains, last step, and seqence id
-// on new session, or new step, it creates first(empty) sequence
 
-'''
 
-verify if session contians oall methods to implemenet solution ??
+
+
 
 
