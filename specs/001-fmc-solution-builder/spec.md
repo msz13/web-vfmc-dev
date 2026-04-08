@@ -101,6 +101,8 @@ move counts without needing any step beyond EO.
 
 - What happens when the user enters a scramble that is already solved?
 - How does the system handle a move sequence that leaves EO unsolved when advancing to DR?
+  **Resolved**: Step advancement is trust-based — the app does not validate cube state correctness.
+  The user decides when each step goal is met.
 - What if a variation is saved with 0 moves (empty continuation)?
 - What is the maximum number of variations per step the system must support?
 
@@ -128,6 +130,9 @@ move counts without needing any step beyond EO.
   variation.
 - **FR-010**: The system MUST support undo (remove last move) during move input.
 - **FR-011**: The system MUST display the solution in both formats described in Key Entities.
+  The step-by-step format MUST include `currentInput` (unsaved, in-progress moves) as the
+  last step line, updating in real time as the user types. The in-progress line is visually
+  distinguished (e.g. dimmed or marked) to indicate it is not yet saved.
 - **FR-012**: The system MUST persist the current session in local browser storage so
   that a page refresh does not lose work.
 - **FR-013**: The system MUST function as a static web application requiring no
@@ -180,6 +185,7 @@ move counts without needing any step beyond EO.
   not need to teach the method or explain steps.
 - A "session" maps to a single FMC attempt (one scramble); managing multiple
   sessions or a history of attempts is out of scope for v1.
+- Deleting a saved sequence is out of scope for v1; the user clears all work by starting a new session.
 - The cube state display is a 3D representation (unfolded net or similar) adequate
   for orientation checking; 
 - Local browser storage is sufficient persistence for v1; cloud sync or account-based
@@ -190,6 +196,15 @@ move counts without needing any step beyond EO.
 - **NISS (Normal Inverse Scramble Switching)** — the ability to toggle between normal
   and inverse scramble context mid-sequence — is intentionally out of scope for this
   feature. It will be delivered as a separate feature (planned as `002-niss-support`).
-  The data model (Variation, Move, Solution Path) should not preclude adding NISS
+  The data model (Sequence, Move, Active Path) should not preclude adding NISS
   context tagging in a future iteration, but no NISS-specific UI or logic is required
   here.
+
+## Clarifications
+
+### Session 2026-04-08
+
+- Q: Does `getActiveSolutionStepByStep()` include `currentInput` (unsaved, in-progress moves) as the last line of the display? → A: Yes — `currentInput` is included as the last step line, updating in real time; visually distinguished as unsaved.
+- Q: Does the app validate cube-state correctness (e.g. EO solved) before allowing step advancement? → A: No — trust-based; the user decides when each step goal is met. No cube-state validation on step transition.
+- Q: Should `undoMove()` be a public method on `Session`? → A: Yes — added as `undoMove(): void` (FR-010).
+- Q: Can the user delete a saved sequence? → A: No — out of scope for v1; user starts a new session to discard work.

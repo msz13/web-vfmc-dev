@@ -96,7 +96,7 @@ export class Session {
   addMove(move: string): void
 
   /**
-   * Removes the last move from currentInput (undo).
+   * Removes the last move from currentInput (undo / backspace).
    * No-op if currentInput is empty.
    */
   undoMove(): void
@@ -125,12 +125,13 @@ export class Session {
   /**
    * Returns the active solution in step-by-step format.
    * Each step on a new line with step name, step move count, and cumulative count.
-   * Example:
+   * Includes `currentInput` as the last step line (in-progress, unsaved), updating
+   * in real time as the user types. The caller is responsible for visually
+   * distinguishing the last (unsaved) line in the UI.
+   * Example (EO saved, DR in progress):
    *   F B R' // EO (3/3)
-   *   U F' R2 L2 F' D' // DR (6/9)
-   *   B F' R2 F' // HTR (4/13)
-   *   U2 L2 D2 B2 R2 // Finish (5/18)
-   * Only includes steps with an active sequence selected.
+   *   U F' R2 // DR (3/6)   ← currentInput, not yet saved
+   * Only saved steps with an active sequence selected appear before the in-progress line.
    */
   getActiveSolutionStepByStep(): string
 
