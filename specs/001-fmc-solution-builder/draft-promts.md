@@ -68,6 +68,17 @@ interface Session {
  
 }
 
+Errors to fix:
+- failed test in actions
+- cube isnt'visualise, refactor to use custom compoenent not js object for cube visualisation
+- add getCubeState which returns scramble plus solution, and modify get solution to return only solution
+- refactor new page design
+    - dark theme
+    - toogle solution view/keybord
+    - you should be able to do every action without scrolling and always see cube
+ 
+TODO later - enter solution  keybord only
+
 
 
 
