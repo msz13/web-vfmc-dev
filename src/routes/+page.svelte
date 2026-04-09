@@ -12,13 +12,14 @@
 
   let scramble = $state('');
   let activeSolution = $state('');
+  let cubeState = $state('')
   let stepByStep = $state('');
   let activeStep = $state<Step>('EO');
   let variations = $state<Sequence[]>([]);
   let activeSequenceId = $state<string | undefined>(undefined);
 
   function syncState() {
-    activeSolution = session.getActiveSolution();
+    cubeState = session.getCubeState();
     stepByStep = session.getActiveSolutionStepByStep();
     variations = session.getStepVariations(activeStep);
     activeSequenceId = session.getActiveSequenceId(activeStep);
@@ -112,7 +113,7 @@
     </div>
 
     <div class="right-col">
-      <CubeDisplay alg={activeSolution} />
+      <CubeDisplay alg={cubeState} />
       {#if scramble}
         <SolutionView {stepByStep} flatSolution={activeSolution} />
       {/if}

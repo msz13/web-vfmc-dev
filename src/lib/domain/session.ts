@@ -1,7 +1,6 @@
 import type { ID, Move, Sequence, SessionState, Step } from './types.js';
 import { STEP_ORDER } from './types.js';
 import { randomScrambleForEvent } from 'cubing/scramble';
-import { isValidScramble } from './cube.js';
 import { loadSession as persistenceLoad, saveSession as persistenceSave, clearSession as persistenceClear } from './persistence.js';
 
 export class ParseError extends Error {
@@ -12,6 +11,14 @@ export class ParseError extends Error {
 }
 
 const MOVE_REGEX = /^[UDLRFB][2']?$/;
+
+
+function isValidScramble(scramble: string): boolean {
+  const trimmed = scramble.trim();
+  if (trimmed === '') return false;
+  return trimmed.split(/\s+/).every((token) => MOVE_REGEX.test(token));
+}
+
 
 function parseMove(notation: string): Move {
   if (!MOVE_REGEX.test(notation)) {
@@ -135,7 +142,7 @@ export class Session {
   }
 
   getActiveSolution(): string {
-    const parts: string[] = [this.state.scramble];
+    const parts: string[] = [];
     for (const step of STEP_ORDER) {
       const seqId = this.state.activeSequenceIds[step];
       if (!seqId) break;
@@ -147,6 +154,11 @@ export class Session {
       parts.push(formatMoves(this.state.currentInput));
     }
     return parts.filter((p) => p.trim() !== '').join(' ');
+  }
+
+  getCubeState(): string {
+    const solution = this.getActiveSolution();
+    return [this.state.scramble, solution].filter((p) => p.trim() !== '').join(' ');
   }
 
   getActiveSolutionStepByStep(): string {

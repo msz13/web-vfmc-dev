@@ -75,7 +75,8 @@ describe('Session.setScramble', () => {
     session.setScramble('R U');
     session.addMove('F');
     session.setScramble("R' U'");
-    expect(session.getActiveSolution()).toBe("R' U'");
+    expect(session.getCubeState()).toBe("R' U'");
+    expect(session.getActiveSolution()).toBe('');
   });
 });
 
@@ -83,15 +84,15 @@ describe('Session.generateScramble', () => {
   it('sets a non-empty scramble string', async () => {
     const session = new Session();
     await session.generateScramble();
-    const sol = session.getActiveSolution();
-    expect(sol.trim().length).toBeGreaterThan(0);
+    const state = session.getCubeState();
+    expect(state.trim().length).toBeGreaterThan(0);
   });
 
   it('produces a scramble consisting of valid WCA moves', async () => {
     const session = new Session();
     await session.generateScramble();
-    const sol = session.getActiveSolution();
-    const tokens = sol.trim().split(/\s+/);
+    const state = session.getCubeState();
+    const tokens = state.trim().split(/\s+/);
     const MOVE_REGEX = /^[UDLRFB][2']?$/;
     for (const t of tokens) {
       expect(MOVE_REGEX.test(t), `token "${t}" should be valid`).toBe(true);
@@ -128,21 +129,21 @@ describe('Session.addMove', () => {
     const session = new Session();
     session.setScramble('R U');
     session.addMove('F');
-    expect(session.getActiveSolution()).toBe('R U F');
+    expect(session.getActiveSolution()).toBe('F');
   });
 
   it("appends a prime move", () => {
     const session = new Session();
     session.setScramble('R');
     session.addMove("U'");
-    expect(session.getActiveSolution()).toBe("R U'");
+    expect(session.getActiveSolution()).toBe("U'");
   });
 
   it('appends a double move', () => {
     const session = new Session();
     session.setScramble('R');
     session.addMove('F2');
-    expect(session.getActiveSolution()).toBe('R F2');
+    expect(session.getActiveSolution()).toBe('F2');
   });
 
   it('throws ParseError for an invalid move token', () => {
@@ -165,14 +166,14 @@ describe('Session.undoMove', () => {
     session.addMove('U');
     session.addMove('F');
     session.undoMove();
-    expect(session.getActiveSolution()).toBe('R U');
+    expect(session.getActiveSolution()).toBe('U');
   });
 
   it('is a no-op when currentInput is empty', () => {
     const session = new Session();
     session.setScramble('R');
     expect(() => session.undoMove()).not.toThrow();
-    expect(session.getActiveSolution()).toBe('R');
+    expect(session.getActiveSolution()).toBe('');
   });
 
   it('does not undo saved sequences — only currentInput', () => {
@@ -181,23 +182,23 @@ describe('Session.undoMove', () => {
     session.addMove('U');
     session.saveSequence();
     session.undoMove(); // no-op: currentInput is empty after save
-    expect(session.getActiveSolution()).toBe('R U');
+    expect(session.getActiveSolution()).toBe('U');
   });
 });
 
 describe('Session.getActiveSolution', () => {
-  it('returns just the scramble when no moves entered', () => {
+  it('returns empty string when no moves entered', () => {
     const session = new Session();
     session.setScramble("R U F'");
-    expect(session.getActiveSolution()).toBe("R U F'");
+    expect(session.getActiveSolution()).toBe('');
   });
 
-  it('appends currentInput moves to the scramble', () => {
+  it('returns currentInput moves as solution', () => {
     const session = new Session();
     session.setScramble('R');
     session.addMove('U');
     session.addMove("B'");
-    expect(session.getActiveSolution()).toBe("R U B'");
+    expect(session.getActiveSolution()).toBe("U B'");
   });
 
   it('includes saved sequences from completed steps', () => {
@@ -207,7 +208,33 @@ describe('Session.getActiveSolution', () => {
     session.saveSequence(); // saves EO sequence
     session.setActiveStep('DR');
     session.addMove('F');
-    expect(session.getActiveSolution()).toBe('R U F');
+    expect(session.getActiveSolution()).toBe('U F');
+  });
+});
+
+describe('Session.getCubeState', () => {
+  it('returns just the scramble when no moves entered', () => {
+    const session = new Session();
+    session.setScramble("R U F'");
+    expect(session.getCubeState()).toBe("R U F'");
+  });
+
+  it('appends solution moves to the scramble', () => {
+    const session = new Session();
+    session.setScramble('R');
+    session.addMove('U');
+    session.addMove("B'");
+    expect(session.getCubeState()).toBe("R U B'");
+  });
+
+  it('includes scramble and all saved sequences', () => {
+    const session = new Session();
+    session.setScramble('R');
+    session.addMove('U');
+    session.saveSequence(); // saves EO sequence
+    session.setActiveStep('DR');
+    session.addMove('F');
+    expect(session.getCubeState()).toBe('R U F');
   });
 });
 
@@ -270,7 +297,7 @@ describe('Session.setActiveStep', () => {
     session.setScramble('R');
     session.addMove('U');
     session.setActiveStep('DR'); // switch without saving
-    expect(session.getActiveSolution()).toBe('R');
+    expect(session.getActiveSolution()).toBe('');
   });
 });
 
@@ -316,7 +343,7 @@ describe('Session.saveSequence', () => {
     session.saveSequence();
     const [seq] = session.getStepVariations('EO');
     // After save, getActiveSolution should include the EO moves
-    expect(session.getActiveSolution()).toBe('R U');
+    expect(session.getActiveSolution()).toBe('U');
     // The sequence id must be set as active
     expect(seq.id).toBeTruthy();
   });
@@ -326,11 +353,11 @@ describe('Session.saveSequence', () => {
     session.setScramble('R');
     session.addMove('U');
     session.saveSequence();
-    // After save, currentInput is cleared — activeSolution is just scramble + saved
+    // After save, currentInput is cleared — activeSolution is just saved moves
     // No extra unsaved moves
-    expect(session.getActiveSolution()).toBe('R U');
+    expect(session.getActiveSolution()).toBe('U');
     session.addMove('F'); // this is new currentInput
-    expect(session.getActiveSolution()).toBe('R U F');
+    expect(session.getActiveSolution()).toBe('U F');
   });
 
   it('saves an empty sequence (zero-move continuation)', () => {
@@ -403,7 +430,7 @@ describe('Session.setActiveSolution', () => {
     const [, seq2] = session.getStepVariations('EO');
 
     session.setActiveSolution('EO', seq2.id);
-    expect(session.getActiveSolution()).toBe('R F');
+    expect(session.getActiveSolution()).toBe('F');
   });
 
   it('clears activeSequenceIds for all subsequent steps', () => {
@@ -418,11 +445,11 @@ describe('Session.setActiveSolution', () => {
     session.addMove('F');
     session.saveSequence();
     // Active path: EO + DR saved
-    expect(session.getActiveSolution()).toBe('R U F');
+    expect(session.getActiveSolution()).toBe('U F');
 
     // Switch EO active — DR should be cleared
     session.setActiveSolution('EO', eoSeq.id); // same id, but clears subsequent
     // DR is no longer active
-    expect(session.getActiveSolution()).toBe('R U');
+    expect(session.getActiveSolution()).toBe('U');
   });
 });

@@ -1,40 +1,25 @@
 <script lang="ts">
-  interface Props {
-    alg: string;
-  }
+  import { onMount } from 'svelte';
 
-  let { alg }: Props = $props();
+
+  let alg: string = $props();
+  
+
+  onMount(() => {
+    import('cubing/twisty');
+  });
+
 </script>
 
-<div
-  {@attach (node) => {
-    let player: any;
-
-    import('cubing/twisty').then(({ TwistyPlayer }) => {
-      player = new TwistyPlayer({
-        visualization: '3D',
-        controlPanel: 'none',
-        background: 'none',
-      });
-      node.appendChild(player);
-      player.alg = alg;
-      player.timestamp = 'end';
-    });
-
-    $effect(() => {
-      if (player) {
-        player.alg = alg;
-        player.timestamp = 'end';
-      }
-    });
-
-    return () => {
-      player?.remove();
-      player = undefined;
-    };
-  }}
-  class="cube-display"
-></div>
+<div class="cube-display">
+  <twisty-player
+    alg={alg} 
+    puzzle="3x3x3"
+    visualization="PG3D"
+    background="none"
+    control-panel="none"
+  ></twisty-player>
+</div>
 
 <style>
   .cube-display {

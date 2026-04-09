@@ -116,11 +116,19 @@ export class Session {
   setActiveSolution(step: Step, sequenceId: ID): void
 
   /**
-   * Returns the active solution as a flat move string for visualisation:
-   * scramble + all moves from active sequences in step order.
-   * Example: "R U F' ... R2 U2 F2"
+   * Returns the solution moves only (without the scramble) as a flat move string.
+   * Concatenates moves from all active sequences in step order, plus currentInput.
+   * Returns an empty string when no moves have been entered.
+   * Example: "U F' R2 U2 F2"
    */
   getActiveSolution(): string
+
+  /**
+   * Returns the full cube state as a flat move string for visualisation:
+   * scramble + all solution moves from active sequences in step order.
+   * Example: "R U F' ... R2 U2 F2"
+   */
+  getCubeState(): string
 
   /**
    * Returns the active solution in step-by-step format.

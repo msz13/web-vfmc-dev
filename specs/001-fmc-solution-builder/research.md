@@ -58,14 +58,17 @@
 **Integration pattern**:
 ```svelte
 <script>
-  import { TwistyPlayer } from "cubing/twisty";
-  let player: TwistyPlayer;
-  $: if (player) {
-    player.alg = fullAlgString;   // scramble + all moves so far
-    player.timestamp = "end";     // show end state, not animation
-  }
-</script>
-<twisty-player bind:this={player} visualization="3D" control-panel="none" />
+ <twisty-player
+      puzzle="3x3x3"
+      visualization="PG3D"
+      background="none"
+      control-panel="none"
+      id="cube-player"
+      experimental-setup-alg=""
+      alg=""
+      "
+    ></twisty-player>
+  </script>
 ```
 
 **Alternatives considered**:
