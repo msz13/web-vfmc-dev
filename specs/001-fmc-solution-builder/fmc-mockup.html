@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMC Solution Builder — Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --bg:          #0c0c10;
+  --surface-1:   #14141a;
+  --surface-2:   #1c1c24;
+  --surface-3:   #2a2a36;
+  --border:      #2e2e3a;
+  --accent:      #54e8b0;
+  --accent-dim:  rgba(84, 232, 176, 0.09);
+  --red:         #f25c5c;
+  --text:        #e4e4ec;
+  --text-dim:    #6e6e82;
+  --mono:        "JetBrains Mono", "Fira Code", "SF Mono", ui-monospace, monospace;
+  --sans:        "DM Sans", "Segoe UI", system-ui, sans-serif;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   10px;
+
+  --face-R:  #f0c746;
+  --face-U:  #e87e3c;
+  --face-F:  #e85c8a;
+  --face-L:  #c06cf2;
+  --face-D:  #5c9cf2;
+  --face-B:  #54e8b0;
+
+  --step-EO:     #f0c746;
+  --step-DR:     #e87e3c;
+  --step-HTR:    #e85c8a;
+  --step-FR:     #c06cf2;
+  --step-Finish: #54e8b0;
+
+  --step-EO-dim:     rgba(240, 199, 70, 0.10);
+  --step-DR-dim:     rgba(232, 126, 60, 0.10);
+  --step-HTR-dim:    rgba(232, 92, 138, 0.10);
+  --step-FR-dim:     rgba(192, 108, 242, 0.10);
+  --step-Finish-dim: rgba(84, 232, 176, 0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { min-height: 100%; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--sans);
+  -webkit-font-smoothing: antialiased; padding: 24px;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 4px; }
+
+/* ═══════════════════════════════════════════════════════════
+   SHARED BUTTONS
+   ═══════════════════════════════════════════════════════════ */
+.btn {
+  border: none; border-radius: var(--radius-md); cursor: pointer;
+  font-family: var(--mono); font-weight: 600; transition: all .12s;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.btn:active { transform: scale(0.96); }
+.btn-secondary {
+  background: var(--surface-2); color: var(--text-dim); padding: 10px 16px;
+  font-size: 12px; border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-primary {
+  background: var(--accent); color: #000; padding: 10px 16px; font-size: 12px;
+}
+.btn-danger {
+  background: var(--surface-2); color: var(--red); padding: 10px 0;
+  font-size: 13px; border: 1px solid rgba(242, 92, 92, 0.25);
+}
+.btn-save {
+  background: var(--accent); color: #000; padding: 10px 0; font-size: 13px;
+}
+
+.btn-move {
+  background: var(--surface-2); color: var(--text); padding: 10px 0 6px;
+  font-size: 14px; border: 1px solid var(--border);
+  flex-direction: column; gap: 4px;
+}
+.btn-move:hover { background: var(--surface-3); }
+.btn-move-bar { width: 60%; height: 3px; border-radius: 2px; opacity: 0.7; }
+.btn-move:hover .btn-move-bar { opacity: 1; }
+.btn-move[data-face="R"] .btn-move-bar { background: var(--face-R); }
+.btn-move[data-face="R"]:hover { border-color: var(--face-R); color: var(--face-R); }
+.btn-move[data-face="U"] .btn-move-bar { background: var(--face-U); }
+.btn-move[data-face="U"]:hover { border-color: var(--face-U); color: var(--face-U); }
+.btn-move[data-face="F"] .btn-move-bar { background: var(--face-F); }
+.btn-move[data-face="F"]:hover { border-color: var(--face-F); color: var(--face-F); }
+.btn-move[data-face="L"] .btn-move-bar { background: var(--face-L); }
+.btn-move[data-face="L"]:hover { border-color: var(--face-L); color: var(--face-L); }
+.btn-move[data-face="D"] .btn-move-bar { background: var(--face-D); }
+.btn-move[data-face="D"]:hover { border-color: var(--face-D); color: var(--face-D); }
+.btn-move[data-face="B"] .btn-move-bar { background: var(--face-B); }
+.btn-move[data-face="B"]:hover { border-color: var(--face-B); color: var(--face-B); }
+
+.label {
+  font-size: 11px; color: var(--text-dim); font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COMPONENT STYLES
+   ═══════════════════════════════════════════════════════════ */
+
+/* ScrambleInput: input + Scramble button + Generate button
+   Desktop: [input + Scramble btn] [Generate btn] side by side
+   Mobile:  input + Scramble btn stacked above Generate btn */
+.scramble-row-desktop {
+  display: grid; grid-template-columns: 1fr auto; gap: 6px;
+}
+.scramble-input-group {
+  display: flex; gap: 6px;
+}
+.scramble-input {
+  flex: 1; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-md); color: var(--text); padding: 10px 14px;
+  font-size: 12px; font-family: var(--mono); outline: none;
+  min-width: 0;
+}
+.scramble-input::placeholder { color: var(--text-dim); }
+.scramble-input[disabled] { color: var(--text); opacity: 0.7; }
+
+.cube-viewport {
+  width: 100%; aspect-ratio: 1;
+  background: var(--surface-1); border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.cube-placeholder { font-family: var(--mono); font-size: 60px; opacity: 0.12; user-select: none; }
+
+.step-tabs { display: flex; gap: 3px; }
+.step-tab {
+  flex: 1; padding: 8px 4px; font-size: 11px; font-weight: 500;
+  font-family: var(--mono); background: var(--surface-2);
+  color: var(--text-dim); border: none; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all .15s; text-align: center;
+  border-bottom: 2px solid transparent;
+}
+.step-tab[data-step="EO"]            { border-bottom-color: var(--step-EO); color: var(--step-EO); }
+.step-tab[data-step="EO"].has-active { background: var(--step-EO-dim); }
+.step-tab[data-step="EO"].active     { background: var(--step-EO); color: #000; font-weight: 700; }
+.step-tab[data-step="DR"]            { border-bottom-color: var(--step-DR); color: var(--step-DR); }
+.step-tab[data-step="DR"].has-active { background: var(--step-DR-dim); }
+.step-tab[data-step="DR"].active     { background: var(--step-DR); color: #000; font-weight: 700; }
+.step-tab[data-step="HTR"]            { border-bottom-color: var(--step-HTR); color: var(--step-HTR); }
+.step-tab[data-step="HTR"].has-active { background: var(--step-HTR-dim); }
+.step-tab[data-step="HTR"].active     { background: var(--step-HTR); color: #000; font-weight: 700; }
+.step-tab[data-step="FR"]            { border-bottom-color: var(--step-FR); color: var(--step-FR); }
+.step-tab[data-step="FR"].has-active { background: var(--step-FR-dim); }
+.step-tab[data-step="FR"].active     { background: var(--step-FR); color: #000; font-weight: 700; }
+.step-tab[data-step="Finish"]            { border-bottom-color: var(--step-Finish); color: var(--step-Finish); }
+.step-tab[data-step="Finish"].has-active { background: var(--step-Finish-dim); }
+.step-tab[data-step="Finish"].active     { background: var(--step-Finish); color: #000; font-weight: 700; }
+.step-tab-badge {
+  display: inline-block; margin-left: 3px; border-radius: 9px;
+  padding: 1px 5px; font-size: 9px; font-weight: 700;
+}
+.step-tab.active .step-tab-badge       { background: rgba(0,0,0,0.2); }
+.step-tab:not(.active) .step-tab-badge { background: var(--surface-3); }
+
+.move-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.move-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+.move-input-header { display: flex; justify-content: space-between; align-items: center; }
+.move-input-preview { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+
+.solution-block {
+  background: var(--surface-2); border-radius: var(--radius-lg);
+  padding: 14px; font-family: var(--mono); font-size: 12px; line-height: 2;
+}
+.solution-line {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  padding-left: 10px; border-left: 3px solid transparent;
+}
+.solution-moves   { color: var(--text); }
+.solution-comment { color: var(--text-dim); }
+.solution-line.unsaved { opacity: 0.5; }
+.solution-dot { color: var(--accent); font-size: 9px; margin-left: 4px; }
+.solution-line[data-step="scramble"] { border-left-color: var(--text-dim); }
+.solution-line[data-step="EO"]      { border-left-color: var(--step-EO); }
+.solution-line[data-step="DR"]      { border-left-color: var(--step-DR); }
+.solution-line[data-step="HTR"]     { border-left-color: var(--step-HTR); }
+.solution-line[data-step="FR"]      { border-left-color: var(--step-FR); }
+.solution-line[data-step="Finish"]  { border-left-color: var(--step-Finish); }
+.solution-scramble-moves { color: var(--text-dim); font-size: 11px; word-break: break-all; }
+.solution-flat {
+  background: var(--surface-1); border-radius: var(--radius-md);
+  padding: 10px 14px; font-family: var(--mono); font-size: 11px;
+  color: var(--text-dim); word-break: break-all; border: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+.variation-selector-section { display: flex; flex-direction: column; gap: 6px; }
+.variation-selector-header { display: flex; justify-content: space-between; align-items: center; }
+.variation-select-wrap { position: relative; }
+.variation-select {
+  width: 100%; appearance: none; -webkit-appearance: none;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-md); color: var(--text);
+  font-family: var(--mono); font-size: 12px;
+  padding: 9px 36px 9px 12px; outline: none; cursor: pointer;
+}
+.variation-select:hover, .variation-select:focus { border-color: var(--accent); }
+.variation-select option { background: var(--surface-2); color: var(--text); font-family: var(--mono); }
+.variation-select-arrow {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: var(--text-dim); font-size: 10px;
+}
+.variation-empty { font-size: 11px; color: var(--text-dim); font-style: italic; padding: 2px 0; }
+
+/* ViewSwitcher: 3 tabs */
+.view-switcher {
+  display: flex; background: var(--surface-2); border-radius: var(--radius-lg);
+  padding: 3px; gap: 2px;
+}
+.view-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 4px; padding: 8px 0; border: none; border-radius: var(--radius-md);
+  font-size: 11px; font-family: var(--mono); font-weight: 400;
+  background: transparent; color: var(--text-dim); cursor: pointer;
+}
+.view-tab.active { background: var(--accent); color: #000; font-weight: 700; }
+.view-tab-icon { font-size: 13px; }
+
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT HELPERS
+   ═══════════════════════════════════════════════════════════ */
+.desktop-shell { max-width: 1100px; display: flex; flex-direction: column; gap: 20px; }
+.desktop-top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.desktop-top-row .cube-viewport { max-height: 400px; }
+.desktop-bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+
+.mobile-frame {
+  width: 375px; background: var(--bg);
+  border: 2px solid var(--border); border-radius: 16px; overflow: hidden;
+}
+.mobile-shell {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 10px; width: 100%;
+}
+.mobile-shell .cube-viewport { max-height: 200px; aspect-ratio: 16/10; }
+.mobile-shell .btn-move { padding: 8px 0 5px; font-size: 12px; }
+.mobile-shell .btn-move-bar { width: 50%; height: 2px; }
+
+.mockup-label {
+  font-family: var(--mono); font-size: 14px; font-weight: 700;
+  color: var(--accent); letter-spacing: 2px; text-transform: uppercase;
+  padding: 16px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 20px;
+}
+
+/* Reusable snippet blocks */
+.variations-stack { display: flex; flex-direction: column; gap: 12px; }
+</style>
+</head>
+<body>
+
+<!-- ███████████████████████████████████████████████████████
+     DESKTOP VIEW
+     ███████████████████████████████████████████████████████ -->
+<div class="mockup-label">▎ Desktop Layout</div>
+
+<div class="desktop-shell">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:baseline;gap:12px;">
+    <span style="font-family:var(--mono);font-weight:700;font-size:20px;color:var(--accent);letter-spacing:-0.5px;">FMC</span>
+    <span style="font-family:var(--mono);font-size:13px;color:var(--text-dim);">Solution Builder</span>
+  </div>
+
+  <!-- TOP ROW: Cube left + Move Input right -->
+  <div class="desktop-top-row">
+
+    <!-- Left: Scramble controls + Cube -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <!--
+        COMPONENT: ScrambleInput
+        file: ScrambleInput.svelte
+        props: scramble, confirmed, onSet, onGenerate
+        Desktop: [input + Scramble btn] and [Generate btn] side by side in one row
+      -->
+      <div class="scramble-row-desktop" data-component="ScrambleInput">
+        <div class="scramble-input-group">
+          <input class="scramble-input" placeholder="R' U' F L2 D R2 U2 ..."
+            value="R' U' F L2 D R2 U2 B2 L2 F2 D' R2 D2 L B D2 L' F R' D2 U R' U' F" disabled />
+          <button class="btn btn-primary" style="white-space:nowrap;">Scramble</button>
+        </div>
+        <button class="btn btn-secondary" style="white-space:nowrap;">⟳ Generate</button>
+      </div>
+
+      <div class="cube-viewport" data-component="CubeViewer">
+        <div class="cube-placeholder">▣</div>
+      </div>
+    </div>
+
+    <!-- Right: StepTabs + MoveGrid + Actions -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <div class="step-tabs" data-component="StepTabs">
+        <button class="step-tab has-active" data-step="EO">EO<span class="step-tab-badge">3</span></button>
+        <button class="step-tab active" data-step="DR">DR<span class="step-tab-badge">0</span></button>
+        <button class="step-tab" data-step="HTR">HTR</button>
+        <button class="step-tab" data-step="FR">FR</button>
+        <button class="step-tab" data-step="Finish">Finish</button>
+      </div>
+
+      <div data-component="MoveInput">
+        <div class="move-input-header" style="margin-bottom:8px;">
+          <span class="label" style="color:var(--step-DR);">Domino Reduction</span>
+          <span class="move-input-preview">U F'</span>
+        </div>
+        <div class="move-grid">
+          <button class="btn btn-move" data-face="R"><span>R</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="U"><span>U</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="F"><span>F</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="L"><span>L</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="D"><span>D</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="B"><span>B</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="R"><span>R'</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="U"><span>U'</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="F"><span>F'</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="L"><span>L'</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="D"><span>D'</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="B"><span>B'</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="R"><span>R2</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="U"><span>U2</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="F"><span>F2</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="L"><span>L2</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="D"><span>D2</span><span class="btn-move-bar"></span></button>
+          <button class="btn btn-move" data-face="B"><span>B2</span><span class="btn-move-bar"></span></button>
+        </div>
+        <div class="move-actions">
+          <button class="btn btn-danger">← Undo</button>
+          <button class="btn btn-save">+ Save</button>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--text-dim);text-align:center;font-family:var(--mono);">Keyboard: face letter + ' or 2</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW: Solution left + Variations right -->
+  <div class="desktop-bottom-row">
+
+    <div style="display:flex;flex-direction:column;gap:8px;" data-component="SolutionView">
+      <div class="label">Solution · 5 moves</div>
+      <div class="solution-block">
+        <div class="solution-line" data-step="scramble">
+          <span class="solution-scramble-moves">R' U' F L2 D R2 U2 B2 L2 F2 D' R2 D2 L B D2 L' F R' D2 U R' U' F</span>
+          <span class="solution-comment">// Scramble</span>
+        </div>
+        <div class="solution-line" data-step="EO">
+          <span class="solution-moves">F B R'</span>
+          <span class="solution-comment">// EO (3/3)</span>
+        </div>
+        <div class="solution-line unsaved" data-step="DR">
+          <span class="solution-moves">U F'</span>
+          <span class="solution-comment">// DR (2/5)</span>
+          <span class="solution-dot">●</span>
+        </div>
+      </div>
+      <div class="solution-flat">
+        R' U' F L2 D R2 U2 B2 L2 F2 D' R2 D2 L B D2 L' F R' D2 U R' U' F &nbsp; F B R' U F'
+      </div>
+    </div>
+
+    <div class="variations-stack">
+      <div class="variation-selector-section" data-component="VariationSelector" data-step="EO">
+        <div class="variation-selector-header"><span class="label" style="color:var(--step-EO);">EO Variations</span></div>
+        <div class="variation-select-wrap">
+          <select class="variation-select">
+            <option selected>▸ #1 &nbsp; F B R' &nbsp;&nbsp; (3)</option>
+            <option>&nbsp; #2 &nbsp; B' F L' &nbsp;&nbsp; (3)</option>
+            <option>&nbsp; #3 &nbsp; R F' B &nbsp;&nbsp; (3)</option>
+          </select>
+          <span class="variation-select-arrow">▼</span>
+        </div>
+      </div>
+      <div class="variation-selector-section" data-component="VariationSelector" data-step="DR">
+        <div class="variation-selector-header"><span class="label" style="color:var(--step-DR);">DR Variations</span></div>
+        <span class="variation-empty">No variations saved yet</span>
+      </div>
+      <div class="variation-selector-section" data-component="VariationSelector" data-step="HTR">
+        <div class="variation-selector-header"><span class="label" style="color:var(--step-HTR);">HTR Variations</span></div>
+        <span class="variation-empty">No variations saved yet</span>
+      </div>
+      <div class="variation-selector-section" data-component="VariationSelector" data-step="FR">
+        <div class="variation-selector-header"><span class="label" style="color:var(--step-FR);">FR Variations</span></div>
+        <span class="variation-empty">No variations saved yet</span>
+      </div>
+      <div class="variation-selector-section" data-component="VariationSelector" data-step="Finish">
+        <div class="variation-selector-header"><span class="label" style="color:var(--step-Finish);">Finish Variations</span></div>
+        <span class="variation-empty">No variations saved yet</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ███████████████████████████████████████████████████████
+     MOBILE — Input Tab
+     ███████████████████████████████████████████████████████ -->
+<div class="mockup-label" style="margin-top:48px;">▎ Mobile — Input Tab</div>
+
+<div class="mobile-frame">
+<div class="mobile-shell">
+
+  <div style="display:flex;align-items:baseline;gap:8px;">
+    <span style="font-family:var(--mono);font-weight:700;font-size:16px;color:var(--accent);">FMC</span>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--text-dim);">Solution Builder</span>
+  </div>
+
+  <!-- Scramble: stacked on mobile (input+btn above, generate below) -->
+  <div style="display:flex;flex-direction:column;gap:6px;" data-component="ScrambleInput">
+    <div class="scramble-input-group">
+      <input class="scramble-input" style="font-size:11px;padding:8px 10px;"
+        value="R' U' F L2 D R2 U2 B2 L2 F2 D' R2 D2 L B D2 L' F R' D2 U R' U' F" disabled />
+      <button class="btn btn-primary" style="font-size:11px;padding:8px 12px;white-space:nowrap;">Scramble</button>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;font-size:11px;padding:8px 12px;">⟳ Generate</button>
+  </div>
+
+  <div class="cube-viewport"><div class="cube-placeholder">▣</div></div>
+
+  <!-- 3-tab switcher -->
+  <div class="view-switcher" data-component="ViewSwitcher">
+    <button class="view-tab active"><span class="view-tab-icon">⌨</span>Input</button>
+    <button class="view-tab"><span class="view-tab-icon">☰</span>Solution</button>
+    <button class="view-tab"><span class="view-tab-icon">◈</span>Variations</button>
+  </div>
+
+  <div class="step-tabs">
+    <button class="step-tab has-active" data-step="EO">EO<span class="step-tab-badge">3</span></button>
+    <button class="step-tab active" data-step="DR">DR<span class="step-tab-badge">0</span></button>
+    <button class="step-tab" data-step="HTR">HTR</button>
+    <button class="step-tab" data-step="FR">FR</button>
+    <button class="step-tab" data-step="Finish">Finish</button>
+  </div>
+
+  <div class="move-input-header">
+    <span class="label" style="color:var(--step-DR);font-size:10px;">Domino Reduction</span>
+    <span class="move-input-preview" style="font-size:11px;">U F'</span>
+  </div>
+
+  <div class="move-grid">
+    <button class="btn btn-move" data-face="R"><span>R</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="U"><span>U</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="F"><span>F</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="L"><span>L</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="D"><span>D</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="B"><span>B</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="R"><span>R'</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="U"><span>U'</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="F"><span>F'</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="L"><span>L'</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="D"><span>D'</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="B"><span>B'</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="R"><span>R2</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="U"><span>U2</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="F"><span>F2</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="L"><span>L2</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="D"><span>D2</span><span class="btn-move-bar"></span></button>
+    <button class="btn btn-move" data-face="B"><span>B2</span><span class="btn-move-bar"></span></button>
+  </div>
+
+  <div class="move-actions">
+    <button class="btn btn-danger" style="font-size:12px;">← Undo</button>
+    <button class="btn btn-save" style="font-size:12px;">+ Save</button>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ███████████████████████████████████████████████████████
+     MOBILE — Solution Tab
+     ███████████████████████████████████████████████████████ -->
+<div class="mockup-label" style="margin-top:48px;">▎ Mobile — Solution Tab</div>
+
+<div class="mobile-frame">
+<div class="mobile-shell">
+
+  <div style="display:flex;align-items:baseline;gap:8px;">
+    <span style="font-family:var(--mono);font-weight:700;font-size:16px;color:var(--accent);">FMC</span>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--text-dim);">Solution Builder</span>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <div class="scramble-input-group">
+      <input class="scramble-input" style="font-size:11px;padding:8px 10px;"
+        value="R' U' F L2 D R2 U2 B2 L2 F2 D' R2 D2 L B D2 L' F R' D2 U R' U' F" disabled />
+      <button class="btn btn-primary" style="font-size:11px;padding:8px 12px;white-space:nowrap;">Scramble</button>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;font-size:11px;padding:8px 12px;">⟳ Generate</button>
+  </div>
+
+  <div class="cube-viewport"><div class="cube-placeholder">▣</div></div>
+
+  <div class="view-switcher">
+    <button class="view-tab"><span class="view-tab-icon">⌨</span>Input</button>
+    <button class="view-tab active"><span class="view-tab-icon">☰</span>Solution</button>
+    <button class="view-tab"><span class="view-tab-icon">◈</span>Variations</button>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <div class="label">Solution · 5 moves</div>
+    <div class="solution-block">
+      <div class="solution-line" data-step="scramble">
+        <span class="solution-scramble-moves">R' U' F L2 D R2 U2 B2 L2 F2 D' R2 D2 L B D2 L' F R' D2 U R' U' F</span>
+        <span class="solution-comment">// Scramble</span>
+      </div>
+      <div class="solution-line" data-step="EO">
+        <span class="solution-moves">F B R'</span>
+        <span class="solution-comment">// EO (3/3)</span>
+      </div>
+      <div class="solution-line unsaved" data-step="DR">
+        <span class="solution-moves">U F'</span>
+        <span class="solution-comment">// DR (2/5)</span>
+        <span class="solution-dot">●</span>
+      </div>
+    </div>
+    <div class="solution-flat">
+      R' U' F L2 D R2 U2 B2 L2 F2 D' R2 D2 L B D2 L' F R' D2 U R' U' F &nbsp; F B R' U F'
+    </div>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ███████████████████████████████████████████████████████
+     MOBILE — Variations Tab
+     ███████████████████████████████████████████████████████ -->
+<div class="mockup-label" style="margin-top:48px;">▎ Mobile — Variations Tab</div>
+
+<div class="mobile-frame">
+<div class="mobile-shell">
+
+  <div style="display:flex;align-items:baseline;gap:8px;">
+    <span style="font-family:var(--mono);font-weight:700;font-size:16px;color:var(--accent);">FMC</span>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--text-dim);">Solution Builder</span>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <div class="scramble-input-group">
+      <input class="scramble-input" style="font-size:11px;padding:8px 10px;"
+        value="R' U' F L2 D R2 U2 B2 L2 F2 D' R2 D2 L B D2 L' F R' D2 U R' U' F" disabled />
+      <button class="btn btn-primary" style="font-size:11px;padding:8px 12px;white-space:nowrap;">Scramble</button>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;font-size:11px;padding:8px 12px;">⟳ Generate</button>
+  </div>
+
+  <div class="cube-viewport"><div class="cube-placeholder">▣</div></div>
+
+  <div class="view-switcher">
+    <button class="view-tab"><span class="view-tab-icon">⌨</span>Input</button>
+    <button class="view-tab"><span class="view-tab-icon">☰</span>Solution</button>
+    <button class="view-tab active"><span class="view-tab-icon">◈</span>Variations</button>
+  </div>
+
+  <div class="variations-stack">
+    <div class="variation-selector-section">
+      <div class="variation-selector-header"><span class="label" style="color:var(--step-EO);">EO</span></div>
+      <div class="variation-select-wrap">
+        <select class="variation-select" style="font-size:11px;padding:7px 30px 7px 10px;">
+          <option selected>▸ #1 F B R' (3)</option>
+          <option>#2 B' F L' (3)</option>
+          <option>#3 R F' B (3)</option>
+        </select>
+        <span class="variation-select-arrow">▼</span>
+      </div>
+    </div>
+    <div class="variation-selector-section">
+      <div class="variation-selector-header"><span class="label" style="color:var(--step-DR);">DR</span></div>
+      <span class="variation-empty">No variations saved yet</span>
+    </div>
+    <div class="variation-selector-section">
+      <div class="variation-selector-header"><span class="label" style="color:var(--step-HTR);">HTR</span></div>
+      <span class="variation-empty">No variations saved yet</span>
+    </div>
+    <div class="variation-selector-section">
+      <div class="variation-selector-header"><span class="label" style="color:var(--step-FR);">FR</span></div>
+      <span class="variation-empty">No variations saved yet</span>
+    </div>
+    <div class="variation-selector-section">
+      <div class="variation-selector-header"><span class="label" style="color:var(--step-Finish);">Finish</span></div>
+      <span class="variation-empty">No variations saved yet</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>
