@@ -16,6 +16,12 @@
   let pendingScramble = $state('');
   let pendingGenerate = $state(false);
 
+  // Sync input when scramble prop changes externally (e.g. after generate)
+  $effect(() => {
+    const s = scramble;
+    inputValue = s;
+  });
+
   function trySetScramble(value: string) {
     error = '';
     if (scramble) {
@@ -41,7 +47,6 @@
   function applyScramble(value: string) {
     try {
       onSetScramble(value);
-      inputValue = value;
     } catch (e) {
       error = e instanceof ParseError ? e.message : 'Invalid scramble';
     }
@@ -52,7 +57,6 @@
     error = '';
     try {
       await onGenerateScramble();
-      inputValue = '';
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to generate scramble';
     } finally {
@@ -80,39 +84,33 @@
   }
 </script>
 
-<div class="scramble-input">
-  <div class="scramble-current">
-    {#if scramble}
-      <span class="label">Current scramble:</span>
-      <code class="scramble-text">{scramble}</code>
-    {:else}
-      <span class="label empty">No scramble set</span>
-    {/if}
-  </div>
-
-  <div class="scramble-controls">
-    <input
-      class="scramble-field"
-      type="text"
-      placeholder="Enter WCA scramble (e.g. R U F' B L D2)"
-      bind:value={inputValue}
-      onkeydown={handleKeydown}
-      aria-label="Scramble input"
-      aria-invalid={error ? 'true' : undefined}
-    />
-    <button
-      class="btn btn-primary"
-      onclick={() => trySetScramble(inputValue)}
-      disabled={!inputValue.trim()}
-    >
-      Set Scramble
-    </button>
+<div class="scramble-wrap">
+  <div class="scramble-row">
+    <div class="scramble-input-group">
+      <input
+        class="scramble-input"
+        class:invalid={!!error}
+        type="text"
+        placeholder="R' U' F L2 D R2 U2 ..."
+        bind:value={inputValue}
+        onkeydown={handleKeydown}
+        aria-label="Scramble"
+        aria-invalid={error ? 'true' : undefined}
+      />
+      <button
+        class="btn btn-primary"
+        onclick={() => trySetScramble(inputValue)}
+        disabled={!inputValue.trim()}
+      >
+        Scramble
+      </button>
+    </div>
     <button
       class="btn btn-secondary"
       onclick={tryGenerate}
       disabled={generating}
     >
-      {generating ? 'Generating…' : 'Generate Scramble'}
+      {generating ? '…' : '⟳ Generate'}
     </button>
   </div>
 
@@ -134,111 +132,84 @@
 </div>
 
 <style>
-  .scramble-input {
+  .scramble-wrap {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: 6px;
   }
 
-  .scramble-current {
+  .scramble-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+  }
+
+  .scramble-input-group {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 1.5rem;
+    gap: 6px;
   }
 
-  .label {
-    font-size: 0.875rem;
-    color: #666;
-    font-weight: 500;
-  }
-
-  .label.empty {
-    font-style: italic;
-  }
-
-  .scramble-text {
-    font-family: monospace;
-    font-size: 0.9rem;
-    background: #f4f4f4;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    word-break: break-all;
-  }
-
-  .scramble-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: stretch;
-  }
-
-  .scramble-field {
-    flex: 1 1 200px;
+  .scramble-input {
+    flex: 1;
     min-width: 0;
-    padding: 0.625rem 0.75rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-family: monospace;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 12px;
+    font-family: var(--mono);
+    outline: none;
   }
 
-  .scramble-field[aria-invalid='true'] {
-    border-color: #c0392b;
-  }
+  .scramble-input::placeholder { color: var(--text-dim); }
+  .scramble-input:focus        { border-color: var(--accent); }
+  .scramble-input.invalid      { border-color: var(--red); }
 
   .btn {
-    padding: 0.625rem 1rem;
     border: none;
-    border-radius: 6px;
-    font-size: 1rem;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    min-height: 44px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 12px;
+    padding: 10px 16px;
+    transition: all 0.12s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     white-space: nowrap;
   }
 
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  .btn:active  { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .btn-primary {
-    background: #2563eb;
-    color: white;
-  }
-
+  .btn-primary   { background: var(--accent); color: #000; }
   .btn-secondary {
-    background: #6b7280;
-    color: white;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
   }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-  .btn-danger {
-    background: #dc2626;
-    color: white;
-  }
-
+  .btn-danger { background: var(--red); color: #fff; }
   .btn-ghost {
     background: transparent;
-    color: #374151;
-    border: 1px solid #d1d5db;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
   }
 
   .error {
-    color: #c0392b;
-    font-size: 0.875rem;
+    color: var(--red);
+    font-size: 11px;
+    font-family: var(--mono);
     margin: 0;
-    padding: 0.5rem;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 4px;
   }
 
   .confirm-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -246,15 +217,17 @@
   }
 
   .confirm-box {
-    background: white;
-    border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 1.5rem;
     max-width: 380px;
     width: 90%;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   }
 
   .confirm-box p {
+    font-size: 14px;
+    color: var(--text);
     margin: 0 0 1rem;
   }
 
@@ -262,5 +235,16 @@
     display: flex;
     gap: 0.75rem;
     justify-content: flex-end;
+  }
+
+  /* Mobile: stack generate button below */
+  @media (max-width: 640px) {
+    .scramble-row {
+      grid-template-columns: 1fr;
+    }
+
+    .btn-secondary {
+      width: 100%;
+    }
   }
 </style>

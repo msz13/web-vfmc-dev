@@ -1,101 +1,159 @@
 <script lang="ts">
+  import { STEP_DISPLAY } from '$lib/domain/types.js';
+  import type { Step } from '$lib/domain/types.js';
+
   interface Props {
+    scramble: string;
     stepByStep: string;
-    flatSolution: string;
   }
 
-  let { stepByStep, flatSolution }: Props = $props();
+  let { scramble, stepByStep }: Props = $props();
 
-  let lines = $derived(stepByStep ? stepByStep.split('\n') : []);
+  interface SolutionLine {
+    moves: string;
+    comment: string;
+    step: string; // display name for data-step attribute
+    unsaved: boolean;
+  }
+
+  let lines = $derived.by<SolutionLine[]>(() => {
+    if (!stepByStep) return [];
+    return stepByStep.split('\n').map((line) => {
+      const sep = line.lastIndexOf('//');
+      const moves = sep >= 0 ? line.slice(0, sep).trim() : line.trim();
+      const comment = sep >= 0 ? line.slice(sep).trim() : '';
+      // Extract step name from comment: "// StepName (n/N*?)"
+      const m = comment.match(/\/\/\s*(\w+)\s*\((\d+)\/\d+(\*)?\)/);
+      const internalStep = m ? m[1] : '';
+      const unsaved = m ? !!m[3] : false;
+      const displayStep = internalStep in STEP_DISPLAY
+        ? STEP_DISPLAY[internalStep as Step]
+        : internalStep;
+      return { moves, comment, step: displayStep, unsaved };
+    });
+  });
+
   let savedLines = $derived(lines.slice(0, -1));
-  let currentLine = $derived(lines.at(-1) ?? '');
+  let currentLine = $derived(lines.at(-1) ?? null);
+
+  // Total saved moves count
+  let totalMoves = $derived.by(() => {
+    if (!lines.length) return 0;
+    const last = lines.at(-1);
+    if (!last) return 0;
+    const m = last.comment.match(/\/\d+/);
+    return m ? parseInt(m[0].slice(1)) : 0;
+  });
+
+  // Flat solution: scramble + all moves
+  let flatSolution = $derived.by(() => {
+    if (!stepByStep) return '';
+    const moveParts: string[] = [];
+    for (const line of lines) {
+      if (line.moves) moveParts.push(line.moves);
+    }
+    return moveParts.length > 0 ? `${scramble}  ${moveParts.join(' ')}` : scramble;
+  });
 </script>
 
-<div class="solution-view">
-  <section class="step-by-step" aria-label="Step-by-step solution">
-    <h2 class="section-title">Step by Step</h2>
-    {#if lines.length === 0}
-      <p class="empty">No moves yet — enter a scramble and start inputting moves.</p>
-    {:else}
-      <ol class="step-list">
-        {#each savedLines as line (line)}
-          <li class="step-line saved">{line}</li>
-        {/each}
-        <li class="step-line current" aria-label="Current input (unsaved)">{currentLine}</li>
-      </ol>
-    {/if}
-  </section>
+{#if scramble}
+  <div class="solution-wrap">
+    <div class="solution-header">
+      <span class="label">Solution · {totalMoves} moves</span>
+    </div>
 
-  {#if flatSolution}
-    <section class="flat-solution" aria-label="Flat solution">
-      <h2 class="section-title">Full Sequence</h2>
-      <code class="flat-text">{flatSolution}</code>
-    </section>
-  {/if}
-</div>
+    <div class="solution-block">
+      <!-- Scramble line -->
+      <div class="solution-line" data-step="scramble">
+        <span class="solution-scramble-moves">{scramble}</span>
+        <span class="solution-comment">// Scramble</span>
+      </div>
+
+      <!-- Saved step lines -->
+      {#each savedLines as line (line.comment)}
+        <div class="solution-line" data-step={line.step}>
+          <span class="solution-moves">{line.moves}</span>
+          <span class="solution-comment">{line.comment}</span>
+        </div>
+      {/each}
+
+      <!-- Current unsaved line -->
+      {#if currentLine}
+        <div class="solution-line" class:unsaved={currentLine.unsaved} data-step={currentLine.step}>
+          <span class="solution-moves">{currentLine.moves || '…'}</span>
+          <span class="solution-comment">{currentLine.comment}</span>
+          {#if currentLine.unsaved}<span class="solution-dot" aria-hidden="true">●</span>{/if}
+        </div>
+      {/if}
+    </div>
+
+    <div class="solution-flat">{flatSolution}</div>
+  </div>
+{/if}
 
 <style>
-  .solution-view {
+  .solution-wrap {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 8px;
   }
 
-  .section-title {
-    font-size: 0.875rem;
-    font-weight: 600;
+  .label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: var(--mono);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #6b7280;
-    margin: 0 0 0.5rem;
+    letter-spacing: 1px;
   }
 
-  .empty {
-    font-size: 0.875rem;
-    color: #9ca3af;
-    font-style: italic;
-    margin: 0;
-  }
-
-  .step-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .solution-block {
+    background: var(--surface-2);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 2;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 2px;
   }
 
-  .step-line {
-    font-family: monospace;
-    font-size: 0.95rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+  .solution-line {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-left: 10px;
+    border-left: 3px solid transparent;
   }
 
-  .step-line.saved {
-    color: #1f2937;
-    background: #f3f4f6;
-  }
+  .solution-moves   { color: var(--text); }
+  .solution-comment { color: var(--text-dim); }
+  .solution-dot     { color: var(--accent); font-size: 9px; margin-left: 4px; }
 
-  .step-line.current {
-    color: #6b7280;
-    font-style: italic;
-    background: #f9fafb;
-    border: 1px dashed #d1d5db;
-  }
+  .solution-line.unsaved { opacity: 0.5; }
 
-  .flat-solution {
-    background: #f3f4f6;
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-  }
+  .solution-line[data-step="scramble"] { border-left-color: var(--text-dim); }
+  .solution-line[data-step="EO"]       { border-left-color: var(--step-EO); }
+  .solution-line[data-step="DR"]       { border-left-color: var(--step-DR); }
+  .solution-line[data-step="HTR"]      { border-left-color: var(--step-HTR); }
+  .solution-line[data-step="FR"]       { border-left-color: var(--step-FR); }
+  .solution-line[data-step="Finish"]   { border-left-color: var(--step-Finish); }
 
-  .flat-text {
-    font-family: monospace;
-    font-size: 0.9rem;
+  .solution-scramble-moves {
+    color: var(--text-dim);
+    font-size: 11px;
     word-break: break-all;
-    color: #374151;
+  }
+
+  .solution-flat {
+    background: var(--surface-1);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    word-break: break-all;
+    border: 1px solid var(--border);
   }
 </style>

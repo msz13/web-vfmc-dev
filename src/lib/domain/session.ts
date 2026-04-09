@@ -161,6 +161,14 @@ export class Session {
     return [this.state.scramble, solution].filter((p) => p.trim() !== '').join(' ');
   }
 
+  getScramble(): string {
+    return this.state.scramble;
+  }
+
+  getCurrentInput(): string {
+    return formatMoves(this.state.currentInput);
+  }
+
   getActiveSolutionStepByStep(): string {
     const lines: string[] = [];
     let runningTotal = 0;

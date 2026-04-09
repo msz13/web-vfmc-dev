@@ -1,20 +1,28 @@
 <script lang="ts">
+  import type { Step } from '$lib/domain/types.js';
+  import { STEP_DISPLAY, STEP_FULL_NAME } from '$lib/domain/types.js';
+
   interface Props {
+    step: Step;
+    currentInput: string;
     onAddMove: (notation: string) => void;
     onUndoMove: () => void;
     onSaveSequence: () => void;
     onClearInput: () => void;
   }
 
-  let { onAddMove, onUndoMove, onSaveSequence, onClearInput }: Props = $props();
+  let { step, currentInput, onAddMove, onUndoMove, onSaveSequence, onClearInput }: Props = $props();
 
   type KbState = 'IDLE' | 'PENDING';
   let kbState: KbState = $state('IDLE');
   let pendingFace: string = $state('');
   let isFocused = $state(false);
 
-  const FACES = ['U', 'D', 'L', 'R', 'F', 'B'] as const;
-  const MOVES: string[] = FACES.flatMap((f) => [f, `${f}'`, `${f}2`]);
+  const FACES = ['R', 'U', 'F', 'L', 'D', 'B'] as const;
+  // Grid: row by suffix so columns are by face
+  const MOVES: { notation: string; face: string }[] = ['', "'", '2'].flatMap((suffix) =>
+    FACES.map((f) => ({ notation: `${f}${suffix}`, face: f }))
+  );
 
   function commitMove(notation: string) {
     onAddMove(notation);
@@ -73,13 +81,17 @@
       }
     }
   }
+
+  let stepColor = $derived(
+    `var(--step-${STEP_DISPLAY[step]})`
+  );
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 <section
   class="move-input"
-  aria-label="Move input — click here then press face letters"
+  aria-label="Move input"
   onfocus={() => (isFocused = true)}
   onblur={(e) => {
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -89,42 +101,46 @@
     }
   }}
 >
-  {#if kbState === 'PENDING'}
-    <div class="pending-indicator" aria-live="polite">
-      Pending: <strong>{pendingFace}</strong> — press <kbd>'</kbd> prime, <kbd>2</kbd> double,
-      face letter to commit, <kbd>Backspace</kbd> to cancel
-    </div>
-  {/if}
+  <!-- Header: step name + current input preview -->
+  <div class="move-header">
+    <span class="step-label" style="color: {stepColor};">{STEP_FULL_NAME[step]}</span>
+    {#if currentInput || kbState === 'PENDING'}
+      <span class="move-preview">{currentInput}{kbState === 'PENDING' ? ` ${pendingFace}…` : ''}</span>
+    {/if}
+  </div>
 
+  <!-- Move grid -->
   <div class="move-grid" aria-label="Move buttons">
-    {#each MOVES as move (move)}
+    {#each MOVES as move (move.notation)}
       <button
         class="move-btn"
-        class:pending={kbState === 'PENDING' && move === pendingFace}
-        onclick={() => handleButtonMove(move)}
+        class:pending={kbState === 'PENDING' && move.notation === pendingFace}
+        data-face={move.face}
+        onclick={() => handleButtonMove(move.notation)}
         onfocus={() => (isFocused = true)}
-        aria-label={move}
+        aria-label={move.notation}
       >
-        {move}
+        <span>{move.notation}</span>
+        <span class="move-bar"></span>
       </button>
     {/each}
   </div>
 
-  <div class="action-row">
-    <button class="action-btn undo-btn" onclick={onUndoMove} onfocus={() => (isFocused = true)} aria-label="Undo last move">
+  <!-- Actions -->
+  <div class="move-actions">
+    <button class="btn btn-undo" onclick={onUndoMove} onfocus={() => (isFocused = true)} aria-label="Undo last move">
       ← Undo
     </button>
-    <button class="action-btn save-btn" onclick={onSaveSequence} onfocus={() => (isFocused = true)} aria-label="Save sequence">
-      Save (Enter)
-    </button>
-    <button class="action-btn clear-btn" onclick={onClearInput} onfocus={() => (isFocused = true)} aria-label="Clear input">
-      Clear (Esc)
+    <button class="btn btn-save" onclick={onSaveSequence} onfocus={() => (isFocused = true)} aria-label="Save sequence">
+      + Save
     </button>
   </div>
 
   <p class="keyboard-hint" aria-live="polite">
-    {#if isFocused}
-      Keyboard active — U D L R F B, then <kbd>'</kbd> or <kbd>2</kbd>
+    {#if isFocused && kbState === 'PENDING'}
+      Pending: <strong>{pendingFace}</strong> — press ' prime · 2 double · face to commit
+    {:else if isFocused}
+      Keyboard: face letter + ' or 2
     {:else}
       Click any button to enable keyboard input
     {/if}
@@ -135,100 +151,114 @@
   .move-input {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    transition: border-color 0.15s;
+    gap: 8px;
   }
 
-  .move-input:focus-within {
-    border-color: #2563eb;
+  .move-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  .pending-indicator {
-    font-size: 0.875rem;
-    color: #1d4ed8;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 6px;
-    padding: 0.5rem 0.75rem;
+  .step-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .move-preview {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
   }
 
   .move-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 0.375rem;
-  }
-
-  @media (max-width: 480px) {
-    .move-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
+    gap: 4px;
   }
 
   .move-btn {
-    min-height: 44px;
-    min-width: 44px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background: #f9fafb;
-    font-family: monospace;
-    font-size: 0.9rem;
-    font-weight: 600;
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: background 0.1s, border-color 0.1s;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 0 6px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 4px;
+    transition: all 0.1s;
   }
 
   .move-btn:hover {
-    background: #e5e7eb;
-    border-color: #9ca3af;
+    background: var(--surface-3);
   }
 
-  .move-btn.pending {
-    background: #dbeafe;
-    border-color: #2563eb;
-    color: #1d4ed8;
+  .move-bar {
+    width: 60%;
+    height: 3px;
+    border-radius: 2px;
+    opacity: 0.7;
+    background: currentColor;
   }
 
-  .action-row {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+  .move-btn:hover .move-bar { opacity: 1; }
+
+  /* Face colors */
+  .move-btn[data-face="R"] { --fc: var(--face-R); }
+  .move-btn[data-face="U"] { --fc: var(--face-U); }
+  .move-btn[data-face="F"] { --fc: var(--face-F); }
+  .move-btn[data-face="L"] { --fc: var(--face-L); }
+  .move-btn[data-face="D"] { --fc: var(--face-D); }
+  .move-btn[data-face="B"] { --fc: var(--face-B); }
+
+  .move-btn .move-bar  { background: var(--fc); }
+  .move-btn:hover      { border-color: var(--fc); color: var(--fc); }
+  .move-btn.pending    { border-color: var(--fc); color: var(--fc); background: var(--surface-3); }
+
+  .move-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-top: 4px;
   }
 
-  .action-btn {
-    min-height: 44px;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    border: none;
-    font-size: 0.875rem;
+  .btn {
+    border-radius: var(--radius-md);
     cursor: pointer;
-    flex: 1;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 0;
+    border: none;
+    transition: all 0.12s;
   }
 
-  .undo-btn {
-    background: #fef3c7;
-    color: #92400e;
+  .btn:active { transform: scale(0.96); }
+
+  .btn-undo {
+    background: var(--surface-2);
+    color: var(--red);
+    border: 1px solid rgba(242, 92, 92, 0.25);
   }
 
-  .save-btn {
-    background: #d1fae5;
-    color: #065f46;
-  }
-
-  .clear-btn {
-    background: #fee2e2;
-    color: #991b1b;
+  .btn-save {
+    background: var(--accent);
+    color: #000;
   }
 
   .keyboard-hint {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    margin: 0;
+    font-size: 10px;
+    color: var(--text-dim);
     text-align: center;
+    font-family: var(--mono);
+    margin: 0;
   }
 </style>

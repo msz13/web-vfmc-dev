@@ -1,19 +1,24 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
+  let { alg }: { alg: string } = $props();
 
-  let alg: string = $props();
-  
+  let player: HTMLElement | null = null;
 
-  onMount(() => {
-    import('cubing/twisty');
+  onMount(async () => {
+    await import('cubing/twisty');
   });
 
+  $effect(() => {
+    if (player) {
+      (player as any).alg = alg;
+    }
+  });
 </script>
 
 <div class="cube-display">
   <twisty-player
-    alg={alg} 
+    bind:this={player}
     puzzle="3x3x3"
     visualization="PG3D"
     background="none"
@@ -24,9 +29,7 @@
 <style>
   .cube-display {
     width: 100%;
-    max-width: 400px;
-    aspect-ratio: 1;
-    margin: 0 auto;
+    height: 100%;
   }
 
   .cube-display :global(twisty-player) {

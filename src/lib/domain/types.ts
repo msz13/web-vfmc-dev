@@ -30,3 +30,15 @@ export interface SessionState {
 
 /** Alg string (scramble + moves) suitable for TwistyPlayer display */
 export type CubeState = string;
+
+export const STEP_DISPLAY: Record<Step, string> = {
+  EO: 'EO', DR: 'DR', HTR: 'HTR', Floppy: 'FR', Finish: 'Finish'
+};
+
+export const STEP_FULL_NAME: Record<Step, string> = {
+  EO: 'Edge Orientation',
+  DR: 'Domino Reduction',
+  HTR: 'Half Turn Reduction',
+  Floppy: 'Floppy Reduction',
+  Finish: 'Finish'
+};
