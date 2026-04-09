@@ -81,7 +81,7 @@ Errors to fix:
       alg=""
       "
     ></twisty-player>
-- add getCubeState which returns scramble plus solution, and modify get solution to return only solution
+- add getCubeState to Session which returns scramble plus solution, and modify getActivesolution to return only solution without scramble, update tests and @domain-api.md 
 - refactor new page design
     - dark theme
     - toogle solution view/keybord
@@ -95,7 +95,10 @@ TODO later - enter solution  keybord only
 
 
 
-
+### Manual tests
+- yourney for saveing step what is next state
+- input to scramble goes to in different plays. cannot svae scramble
+- soluotion display to small, nie widac kolejnych liniie
 
 
 
