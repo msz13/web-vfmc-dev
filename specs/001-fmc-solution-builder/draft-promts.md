@@ -70,13 +70,27 @@ interface Session {
 
 Errors to fix:
 - failed test in actions
-- cube isnt'visualise, refactor to use custom compoenent not js object for cube visualisation
+- cube isnt'visualise, refactor to use custom compoenent not js object for cube visualisation: change research.md usage:
+ <twisty-player
+      puzzle="3x3x3"
+      visualization="PG3D"
+      background="none"
+      control-panel="none"
+      id="cube-player"
+      experimental-setup-alg=""
+      alg=""
+      "
+    ></twisty-player>
 - add getCubeState which returns scramble plus solution, and modify get solution to return only solution
 - refactor new page design
     - dark theme
     - toogle solution view/keybord
     - you should be able to do every action without scrolling and always see cube
- 
+- session state should't have updateat property, remove all assignmentsof update at field
+- add move - enum (moves) tpye on input, not need parsing
+- tranform  generateScramble function in Session form async to non-async
+- sprawdzic get step variation - niepotrzebnie zwraca variancje dla parent id, powinna zwrotcic tylko wszystkie wariance dla step
+- 
 TODO later - enter solution  keybord only
 
 
