@@ -116,18 +116,18 @@
 
   <!-- DESKTOP LAYOUT -->
   <div class="desktop">
-    <!-- Top row: Scramble+Cube left | StepTabs+MoveInput right -->
+    <!-- Scramble input: full width above the grid -->
+    <ScrambleInput
+      {scramble}
+      onSetScramble={handleSetScramble}
+      onGenerateScramble={handleGenerateScramble}
+    />
+
+    <!-- Top row: Cube left | StepTabs+MoveInput right (aligned) -->
     <div class="desktop-top">
-      <!-- Left: scramble + cube -->
-      <div class="col">
-        <ScrambleInput
-          {scramble}
-          onSetScramble={handleSetScramble}
-          onGenerateScramble={handleGenerateScramble}
-        />
-        <div class="cube-viewport">
-          <CubeDisplay alg={cubeState} />
-        </div>
+      <!-- Left: cube display -->
+      <div class="cube-viewport">
+        <CubeDisplay alg={cubeState} />
       </div>
 
       <!-- Right: step tabs + move input -->
@@ -154,7 +154,6 @@
               <button class="reset-btn" onclick={handleResetToScramble} title="Reset to Scramble">
                 Reset
               </button>
-              <!-- comment -->
             {/if}
           </div>
 
