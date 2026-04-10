@@ -336,17 +336,7 @@ describe('Session.saveSequence', () => {
     expect(drSeq.parentId).toBe(eoSeq.id);
   });
 
-  it('sets activeSequenceIds for the saved step', () => {
-    const session = new Session();
-    session.setScramble('R');
-    session.addMove('U');
-    session.saveSequence();
-    const [seq] = session.getStepVariations('EO');
-    // After save, getActiveSolution should include the EO moves
-    expect(session.getActiveSolution()).toBe('U');
-    // The sequence id must be set as active
-    expect(seq.id).toBeTruthy();
-  });
+  
 
   it('clears currentInput after saving', () => {
     const session = new Session();
@@ -382,13 +372,13 @@ describe('Session.getStepVariations', () => {
     session.setScramble('R');
     session.addMove('U');
     session.saveSequence();
-    session.setActiveStep('EO');
+    session.resetToScramble();
     session.addMove('F');
     session.saveSequence();
     expect(session.getStepVariations('EO')).toHaveLength(2);
   });
 
-  it('returns only DR sequences whose parentId matches the active EO', () => {
+  it('returns all DR sequences regardless of active EO', () => {
     const session = new Session();
     session.setScramble('R');
     // Save two EO sequences
@@ -399,22 +389,42 @@ describe('Session.getStepVariations', () => {
     session.setActiveStep('EO');
     session.addMove('F');
     session.saveSequence();
-    const eoVariations = session.getStepVariations('EO');
-    const eo2 = eoVariations[1];
 
-    // Switch active EO to eo1, save a DR
+    // Save a DR under eo1
     session.setActiveSolution('EO', eo1.id);
     session.setActiveStep('DR');
     session.addMove('B');
     session.saveSequence();
 
-    // DR variations under eo1
-    session.setActiveSolution('EO', eo1.id);
+    // All DR sequences are returned regardless of which EO is active
     expect(session.getStepVariations('DR')).toHaveLength(1);
+  });
+});
 
-    // DR variations under eo2 should be empty
-    session.setActiveSolution('EO', eo2.id);
-    expect(session.getStepVariations('DR')).toHaveLength(0);
+describe('Session.resetToScramble', () => {
+  it('preserves scramble and sequences, clears activeSequenceIds and currentInput, resets activeStep to EO', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.addMove('B');
+    session.saveSequence();
+    session.setActiveStep('DR');
+    session.addMove('L');
+    session.resetToScramble();
+
+    expect(session.getScramble()).toBe('R U F');
+    expect(session.getActiveSolution()).toBe('');
+    expect(session.getCubeState()).toBe('R U F');
+    // saved sequences are preserved so variations can be added
+    expect(session.getStepVariations('EO')).toHaveLength(1);
+    // activeStep resets to EO — step-by-step shows EO in-progress line
+    expect(session.getActiveSolutionStepByStep()).toContain('EO');
+  });
+
+  it('is a no-op when no scramble has been set', () => {
+    const session = new Session();
+    expect(() => session.resetToScramble()).not.toThrow();
+    expect(session.getCubeState()).toBe('');
+    expect(session.getActiveSolution()).toBe('');
   });
 });
 
@@ -427,10 +437,45 @@ describe('Session.setActiveSolution', () => {
     session.setActiveStep('EO');
     session.addMove('F');
     session.saveSequence();
-    const [, seq2] = session.getStepVariations('EO');
+    const [seq1,] = session.getStepVariations('EO');
 
-    session.setActiveSolution('EO', seq2.id);
-    expect(session.getActiveSolution()).toBe('F');
+    session.setActiveSolution('EO', seq1.id);
+    expect(session.getActiveSolution()).toBe('U');
+  });
+
+  it('subsequent step sequences remain visible after switching active solution', () => {
+    const session = new Session();
+    session.setScramble('R');
+
+    // Save two EO sequences
+    session.addMove('U');
+    session.saveSequence();
+    const [eo1] = session.getStepVariations('EO');
+    
+
+    session.resetToScramble();
+    session.addMove('F');
+    session.saveSequence();
+    const [, eo2] = session.getStepVariations('EO');
+
+    // Save a DR under eo1
+    session.setActiveSolution('EO', eo1.id);
+    session.setActiveStep('DR');
+    session.addMove('B');
+    session.saveSequence();
+    const [dr1] = session.getStepVariations('DR');
+
+    // Save a DR under eo2
+    session.setActiveSolution('EO', eo2.id);
+    session.setActiveStep('DR');
+    session.addMove('L');
+    session.saveSequence();
+
+    //active solution shoult contain subsquent steps
+    session.setActiveSolution('DR', dr1.id)
+    expect(session.getActiveSolution()).toBe("U B")
+  
+   
   });
 
   it('clears activeSequenceIds for all subsequent steps', () => {

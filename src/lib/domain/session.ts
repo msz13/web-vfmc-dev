@@ -81,15 +81,7 @@ export class Session {
   }
 
   getStepVariations(step: Step): Sequence[] {
-    const idx = STEP_ORDER.indexOf(step);
-    if (idx === 0) {
-      return this.state.sequences.filter((s) => s.stepName === step && s.parentId === null);
-    }
-    const prevStep = STEP_ORDER[idx - 1];
-    const activeParentId = this.state.activeSequenceIds[prevStep] ?? null;
-    return this.state.sequences.filter(
-      (s) => s.stepName === step && s.parentId === activeParentId
-    );
+    return this.state.sequences.filter((s) => s.stepName === step);
   }
 
   setActiveStep(step: Step): void {
@@ -133,8 +125,16 @@ export class Session {
 
   setActiveSolution(step: Step, sequenceId: ID): void {
     this.state.activeSequenceIds[step] = sequenceId;
-    // Invalidate all subsequent steps
+
+    // Walk up parentId chain to activate ancestor steps
     const idx = STEP_ORDER.indexOf(step);
+    let current = this.state.sequences.find((s) => s.id === sequenceId);
+    for (let i = idx - 1; i >= 0 && current?.parentId; i--) {
+      this.state.activeSequenceIds[STEP_ORDER[i]] = current.parentId;
+      current = this.state.sequences.find((s) => s.id === current!.parentId);
+    }
+
+    // Invalidate all subsequent steps
     for (let i = idx + 1; i < STEP_ORDER.length; i++) {
       delete this.state.activeSequenceIds[STEP_ORDER[i]];
     }
@@ -200,6 +200,17 @@ export class Session {
 
   saveSession(): void {
     persistenceSave(this.state);
+  }
+
+  resetToScramble(): void {
+    if (!this.state.scramble) return;
+    this.state = {
+      ...this.state,
+      activeSequenceIds: {},
+      activeStep: 'EO',
+      currentInput: [],
+      updatedAt: Date.now()
+    };
   }
 
   clearSession(): void {

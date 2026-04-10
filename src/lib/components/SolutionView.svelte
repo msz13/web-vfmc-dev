@@ -3,11 +3,11 @@
   import type { Step } from '$lib/domain/types.js';
 
   interface Props {
-    scramble: string;
+    solution: string;
     stepByStep: string;
   }
 
-  let { scramble, stepByStep }: Props = $props();
+  let { solution, stepByStep }: Props = $props();
 
   interface SolutionLine {
     moves: string;
@@ -45,30 +45,16 @@
     return m ? parseInt(m[0].slice(1)) : 0;
   });
 
-  // Flat solution: scramble + all moves
-  let flatSolution = $derived.by(() => {
-    if (!stepByStep) return '';
-    const moveParts: string[] = [];
-    for (const line of lines) {
-      if (line.moves) moveParts.push(line.moves);
-    }
-    return moveParts.length > 0 ? `${scramble}  ${moveParts.join(' ')}` : scramble;
-  });
+  let flatSolution = $derived(solution);
 </script>
 
-{#if scramble}
+{#if stepByStep}
   <div class="solution-wrap">
     <div class="solution-header">
       <span class="label">Solution · {totalMoves} moves</span>
     </div>
 
     <div class="solution-block">
-      <!-- Scramble line -->
-      <div class="solution-line" data-step="scramble">
-        <span class="solution-scramble-moves">{scramble}</span>
-        <span class="solution-comment">// Scramble</span>
-      </div>
-
       <!-- Saved step lines -->
       {#each savedLines as line (line.comment)}
         <div class="solution-line" data-step={line.step}>
@@ -139,12 +125,6 @@
   .solution-line[data-step="HTR"]      { border-left-color: var(--step-HTR); }
   .solution-line[data-step="FR"]       { border-left-color: var(--step-FR); }
   .solution-line[data-step="Finish"]   { border-left-color: var(--step-Finish); }
-
-  .solution-scramble-moves {
-    color: var(--text-dim);
-    font-size: 11px;
-    word-break: break-all;
-  }
 
   .solution-flat {
     background: var(--surface-1);

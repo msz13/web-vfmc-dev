@@ -13,6 +13,7 @@
   type MobileView = 'input' | 'solution' | 'variations';
 
   let scramble = $state('');
+  let solution = $state('');
   let cubeState = $state('');
   let stepByStep = $state('');
   let currentInput = $state('');
@@ -27,6 +28,7 @@
   let mobileView = $state<MobileView>('input');
 
   function syncState() {
+    solution = session.getActiveSolution();
     cubeState = session.getCubeState();
     stepByStep = session.getActiveSolutionStepByStep();
     currentInput = session.getCurrentInput();
@@ -85,9 +87,24 @@
     syncState();
   }
 
+  function handleResetToScramble() {
+    session.resetToScramble();
+    activeStep = 'EO';
+    syncState();
+  }
+
   // Variation count per step (for step tab badges)
   function variationCount(step: Step): number {
     return allVariations[step]?.sequences.length ?? 0;
+  }
+
+  // Show Reset button only when scramble is set and there are saved sequences or current input
+  function hasMovesToReset(): boolean {
+    if (!scramble) return false;
+    return (
+      Object.values(allVariations).some((v) => v.sequences.length > 0) ||
+      currentInput.trim().length > 0
+    );
   }
 </script>
 
@@ -116,22 +133,30 @@
       <!-- Right: step tabs + move input -->
       <div class="col">
         {#if scramble}
-          <nav class="step-tabs" aria-label="Solving steps">
-            {#each STEP_ORDER as step (step)}
-              {@const count = variationCount(step)}
-              {@const hasActive = allVariations[step]?.activeId != null}
-              <button
-                class="step-tab"
-                class:active={step === activeStep}
-                class:has-active={hasActive && step !== activeStep}
-                data-step={STEP_DISPLAY[step]}
-                onclick={() => handleSelectStep(step)}
-                aria-pressed={step === activeStep}
-              >
-                {STEP_DISPLAY[step]}{#if count > 0}<span class="step-tab-badge">{count}</span>{/if}
+          <div class="step-tabs-row">
+            <nav class="step-tabs" aria-label="Solving steps">
+              {#each STEP_ORDER as step (step)}
+                {@const count = variationCount(step)}
+                {@const hasActive = allVariations[step]?.activeId != null}
+                <button
+                  class="step-tab"
+                  class:active={step === activeStep}
+                  class:has-active={hasActive && step !== activeStep}
+                  data-step={STEP_DISPLAY[step]}
+                  onclick={() => handleSelectStep(step)}
+                  aria-pressed={step === activeStep}
+                >
+                  {STEP_DISPLAY[step]}{#if count > 0}<span class="step-tab-badge">{count}</span>{/if}
+                </button>
+              {/each}
+            </nav>
+            {#if hasMovesToReset()}
+              <button class="reset-btn" onclick={handleResetToScramble} title="Reset to Scramble">
+                Reset
               </button>
-            {/each}
-          </nav>
+              <!-- comment -->
+            {/if}
+          </div>
 
           <MoveInput
             step={activeStep}
@@ -150,7 +175,7 @@
     <!-- Bottom row: Solution left | Variations right -->
     {#if scramble}
       <div class="desktop-bottom">
-        <SolutionView {scramble} {stepByStep} />
+        <SolutionView {solution} {stepByStep} />
         <VariationList
           steps={STEP_ORDER}
           variations={allVariations}
@@ -205,22 +230,29 @@
       </div>
 
       {#if mobileView === 'input'}
-        <nav class="step-tabs" aria-label="Solving steps">
-          {#each STEP_ORDER as step (step)}
-            {@const count = variationCount(step)}
-            {@const hasActive = allVariations[step]?.activeId != null}
-            <button
-              class="step-tab"
-              class:active={step === activeStep}
-              class:has-active={hasActive && step !== activeStep}
-              data-step={STEP_DISPLAY[step]}
-              onclick={() => handleSelectStep(step)}
-              aria-pressed={step === activeStep}
-            >
-              {STEP_DISPLAY[step]}{#if count > 0}<span class="step-tab-badge">{count}</span>{/if}
+        <div class="step-tabs-row">
+          <nav class="step-tabs" aria-label="Solving steps">
+            {#each STEP_ORDER as step (step)}
+              {@const count = variationCount(step)}
+              {@const hasActive = allVariations[step]?.activeId != null}
+              <button
+                class="step-tab"
+                class:active={step === activeStep}
+                class:has-active={hasActive && step !== activeStep}
+                data-step={STEP_DISPLAY[step]}
+                onclick={() => handleSelectStep(step)}
+                aria-pressed={step === activeStep}
+              >
+                {STEP_DISPLAY[step]}{#if count > 0}<span class="step-tab-badge">{count}</span>{/if}
+              </button>
+            {/each}
+          </nav>
+          {#if hasMovesToReset()}
+            <button class="reset-btn" onclick={handleResetToScramble} title="Reset to Scramble">
+              Reset
             </button>
-          {/each}
-        </nav>
+          {/if}
+        </div>
 
         <MoveInput
           step={activeStep}
@@ -231,7 +263,7 @@
           onClearInput={handleClearInput}
         />
       {:else if mobileView === 'solution'}
-        <SolutionView {scramble} {stepByStep} />
+        <SolutionView {solution} {stepByStep} />
       {:else}
         <VariationList
           steps={STEP_ORDER}
@@ -355,6 +387,39 @@
 
   .view-tab-icon {
     font-size: 13px;
+  }
+
+  /* Step tabs row wrapper (tabs + optional reset button) */
+  .step-tabs-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .step-tabs-row .step-tabs {
+    flex: 1;
+  }
+
+  .reset-btn {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 600;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .reset-btn:hover {
+    background: var(--surface-3);
+    color: var(--text);
   }
 
   /* Step tabs (shared between desktop and mobile) */

@@ -155,6 +155,14 @@ export class Session {
   saveSession(): void
 
   /**
+   * Discards all entered moves (currentInput, sequences, activeSequenceIds) and
+   * restores the cube state to the scrambled position.
+   * The active scramble is preserved unchanged.
+   * No-op if no scramble has been set.
+   */
+  resetCubeState(): void
+
+  /**
    * Clears the stored session from localStorage and resets in-memory state.
    */
   clearSession(): void

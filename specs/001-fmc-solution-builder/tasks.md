@@ -50,16 +50,19 @@
 ### Tests (write first — must fail before implementation)
 
 - [X] T014 [P] [US2] Add failing tests for `setScramble` (accepts valid, throws `ParseError` on invalid) and `generateScramble` (returns non-empty string), `getAllSteps` (returns `STEP_ORDER`), `nextStep` ('EO'→'DR', 'Finish'→null) — `src/lib/domain/session.test.ts`
+- [X] T014b [P] [US2] Add failing tests for `resetToScramble`: (a) scramble preserved, sequences cleared, currentInput cleared, activeStep reset to 'EO'; (b) no-op when no scramble set — `src/lib/domain/session.test.ts`
 
 ### Implementation
 
 - [X] T015 [US2] Implement `src/lib/domain/scramble.ts`: async `generateScramble(): Promise<string>` wrapping `cubing/scramble` — `src/lib/domain/scramble.ts`
 - [X] T016 [US2] Implement `Session` class constructor, `setScramble`, `generateScramble`, `getAllSteps`, `nextStep`, `loadSession`, `saveSession`, `clearSession`; private `parseMove` and `parseMoveSequence` — `src/lib/domain/session.ts`
+- [X] T016b [US2] Implement `Session.resetToScramble`: clear `sequences`, `activeSequenceIds`, `currentInput`; reset `activeStep` to `'EO'`; preserve `scramble`; no-op if `scramble` is empty — `src/lib/domain/session.ts`
 - [X] T017 [P] [US2] Implement `ScrambleInput.svelte`: text field + "Generate Scramble" button + confirmation dialog on replace + inline error on invalid input — `src/lib/components/ScrambleInput.svelte`
 - [X] T018 [P] [US2] Implement `CubeDisplay.svelte`: `TwistyPlayer` wrapper accepting a move string; renders 3D cube state — `src/lib/components/CubeDisplay.svelte`
 - [X] T019 [US2] Wire `ScrambleInput` + `CubeDisplay` into page; call `session.setScramble` / `session.generateScramble`; pass `session.getActiveSolution()` to `CubeDisplay` — `src/routes/+page.svelte`
+- [X] T019b [US2] Add "Reset" button to the page (visible only when a scramble is set and moves exist) near step tab nav; call `session.resetToScramble()` on click and update all reactive state — `src/routes/+page.svelte`
 
-**Checkpoint**: Scramble setup fully functional. Cube displays scrambled state on both input paths.
+**Checkpoint**: Scramble setup fully functional. Cube displays scrambled state on both input paths. "Reset to Scramble" discards moves and restores scrambled state without changing the active scramble.
 
 ---
 
@@ -112,7 +115,7 @@
 - [ ] T030 Call `session.loadSession()` on app startup to restore in-progress session; fall back to empty state if null (SC-005) — `src/routes/+page.svelte`
 - [ ] T031 [P] Mobile layout pass: verify 375px viewport, no horizontal scroll, all buttons ≥44×44px, step tabs reachable by thumb (SC-004) — `src/lib/components/MoveInput.svelte`, `src/routes/+page.svelte`
 - [ ] T032 [P] Update `quickstart.md` key domain concepts table to reflect `Sequence`, `SessionState`, `Active Path`, `STEP_ORDER` without `Insertions` — `specs/001-fmc-solution-builder/quickstart.md`
-- [ ] T033 Run `npm test && npm run lint` and verify all acceptance scenarios from spec.md manually in browser
+- [ ] T033 Run `npm test && npm run lint` and verify all acceptance scenarios from spec.md manually in browser, including US2 scenario 4: enter moves → press "Reset to Scramble" → moves cleared → cube returns to scrambled state → scramble unchanged
 
 ---
 

@@ -69,6 +69,9 @@ random scramble that sets the cube state, without typing anything.
 3. **Given** a scramble has been set, **When** the user presses "Generate Scramble"
    again, **Then** a confirmation is shown before replacing the existing scramble and
    discarding any entered moves.
+4. **Given** a scramble has been set and moves have been entered, **When** the user
+   presses "Reset to Scramble", **Then** all entered moves are discarded and the cube
+   state is restored to the scrambled position, without changing the active scramble.
 
 ---
 

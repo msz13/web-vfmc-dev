@@ -4,14 +4,17 @@
   let { alg }: { alg: string } = $props();
 
   let player: HTMLElement | null = null;
+  let loaded = $state(false);
 
   onMount(async () => {
     await import('cubing/twisty');
+    loaded = true;
   });
 
   $effect(() => {
-    if (player) {
-      (player as any).alg = alg;
+    if (loaded && player) {
+      (player as any).experimentalSetupAlg = alg;
+      (player as any).alg = '';
     }
   });
 </script>
