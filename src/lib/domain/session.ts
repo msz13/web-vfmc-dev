@@ -46,7 +46,6 @@ function emptyState(scramble: string): SessionState {
     activeStep: 'EO',
     currentInput: [],
     createdAt: now,
-    updatedAt: now
   };
 }
 
@@ -80,6 +79,12 @@ export class Session {
     return STEP_ORDER[idx + 1];
   }
 
+  prevStep(step: Step): Step | null {
+    const idx = STEP_ORDER.indexOf(step);
+    if (idx <= 0) return null;
+    return STEP_ORDER[idx - 1];
+  }
+
   getStepVariations(step: Step): Sequence[] {
     return this.state.sequences.filter((s) => s.stepName === step);
   }
@@ -87,19 +92,19 @@ export class Session {
   setActiveStep(step: Step): void {
     this.state.activeStep = step;
     this.state.currentInput = [];
-    this.state.updatedAt = Date.now();
+
   }
 
   addMove(move: string): void {
     const parsed = parseMove(move);
     this.state.currentInput.push(parsed);
-    this.state.updatedAt = Date.now();
+
   }
 
   undoMove(): void {
     if (this.state.currentInput.length === 0) return;
     this.state.currentInput.pop();
-    this.state.updatedAt = Date.now();
+
   }
 
   saveSequence(): void {
@@ -120,7 +125,7 @@ export class Session {
     this.state.sequences.push(seq);
     this.state.activeSequenceIds[step] = seq.id;
     this.state.currentInput = [];
-    this.state.updatedAt = Date.now();
+
   }
 
   setActiveSolution(step: Step, sequenceId: ID): void {
@@ -138,7 +143,7 @@ export class Session {
     for (let i = idx + 1; i < STEP_ORDER.length; i++) {
       delete this.state.activeSequenceIds[STEP_ORDER[i]];
     }
-    this.state.updatedAt = Date.now();
+
   }
 
   getActiveSolution(): string {
@@ -209,7 +214,6 @@ export class Session {
       activeSequenceIds: {},
       activeStep: 'EO',
       currentInput: [],
-      updatedAt: Date.now()
     };
   }
 

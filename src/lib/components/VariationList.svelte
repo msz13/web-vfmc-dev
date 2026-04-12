@@ -11,9 +11,10 @@
     steps: Step[];
     variations: Record<Step, StepVariations>;
     onSelectVariation: (step: Step, sequenceId: string) => void;
+    onClearVariation: (step: Step) => void;
   }
 
-  let { steps, variations, onSelectVariation }: Props = $props();
+  let { steps, variations, onSelectVariation, onClearVariation }: Props = $props();
 
   function handleChange(step: Step, e: Event) {
     const select = e.target as HTMLSelectElement;
@@ -27,6 +28,9 @@
     <div class="variation-section" data-step={STEP_DISPLAY[step]}>
       <div class="variation-header">
         <span class="step-label">{STEP_DISPLAY[step]} Variations</span>
+        {#if activeId}
+          <button class="clear-btn" onclick={() => onClearVariation(step)} title="Clear selection">×</button>
+        {/if}
       </div>
 
       {#if sequences.length === 0}
@@ -35,10 +39,13 @@
         <div class="select-wrap">
           <select
             class="variation-select"
-            value={activeId ?? sequences[0].id}
+            value={activeId ?? ''}
             onchange={(e) => handleChange(step, e)}
             aria-label="{STEP_DISPLAY[step]} variation"
           >
+            {#if !activeId}
+              <option value="" disabled>— select —</option>
+            {/if}
             {#each sequences as seq, i (seq.id)}
               <option value={seq.id}>
                 {seq.id === activeId ? '▸' : '\u00a0'} #{i + 1}  {seq.moves.map((m) => m.notation).join(' ') || '(empty)'}  ({seq.moves.length})
@@ -123,6 +130,18 @@
     color: var(--text-dim);
     font-size: 10px;
   }
+
+  .clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+
+  .clear-btn:hover { color: var(--text); }
 
   .variation-empty {
     font-size: 11px;

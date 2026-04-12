@@ -25,7 +25,6 @@ export interface SessionState {
   activeStep: Step;
   currentInput: Move[]; // unsaved moves being typed
   createdAt: number; // Unix ms
-  updatedAt: number; // Unix ms
 }
 
 /** Alg string (scramble + moves) suitable for TwistyPlayer display */

@@ -81,23 +81,28 @@ Errors to fix:
       alg=""
       "
     ></twisty-player>
-- add getCubeState to Session which returns scramble plus solution, and modify getActivesolution to return only solution without scramble, update tests and @domain-api.md 
-- refactor new page design
+- [x] add getCubeState to Session which returns scramble plus solution, and modify getActivesolution to return only solution without scramble, update tests and @domain-api.md 
+- [x] refactor new page design
     - dark theme
     - toogle solution view/keybord
     - you should be able to do every action without scrolling and always see cube
 - session state should't have updateat property, remove all assignmentsof update at field
 - add move - enum (moves) tpye on input, not need parsing
-- tranform  generateScramble function in Session form async to non-async
 - sprawdzic get step variation - niepotrzebnie zwraca variancje dla parent id, powinna zwrotcic tylko wszystkie wariance dla step
-- 
-TODO later - enter solution  keybord only
+- refactor handle change in variation list, chacking if page, get previous step in session
+
+FIX:
+-[ x ] on variation list, when you chose select, state should be reseted to previous step 
+
+TODO later 
+- enter solution  keybord only
+- cube rotations
 
 
 
 ### Manual tests
 - yourney for saveing step what is next state
-- input to scramble goes to in different plays. cannot svae scramble
+- input to scramble goes to in different plays. cannot save scramble
 - soluotion display to small, nie widac kolejnych liniie
 
 

@@ -87,6 +87,21 @@
     syncState();
   }
 
+  function handleClearVariation(step: Step) {
+    const prevStep = session.prevStep(step);
+    if (!prevStep) {
+      session.resetToScramble();
+      activeStep = 'EO';
+      syncState();
+      return;
+    }
+    const prevActiveId = allVariations[prevStep]?.activeId;
+    if (prevActiveId) {
+      session.setActiveSolution(prevStep, prevActiveId);
+      syncState();
+    }
+  }
+
   function handleResetToScramble() {
     session.resetToScramble();
     activeStep = 'EO';
@@ -179,6 +194,7 @@
           steps={STEP_ORDER}
           variations={allVariations}
           onSelectVariation={handleSelectVariation}
+          onClearVariation={handleClearVariation}
         />
       </div>
     {/if}
@@ -268,6 +284,7 @@
           steps={STEP_ORDER}
           variations={allVariations}
           onSelectVariation={handleSelectVariation}
+          onClearVariation={handleClearVariation}
         />
       {/if}
     {/if}

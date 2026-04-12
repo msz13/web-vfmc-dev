@@ -39,7 +39,7 @@ export interface SessionState {
   activeStep: Step;
   currentInput: Move[];                           // unsaved moves being typed
   createdAt: number;             // Unix ms
-  updatedAt: number;             // Unix ms
+  
 }
 ```
 
@@ -75,6 +75,11 @@ export class Session {
    * Returns the next Step after the given step, or null if at 'Finish'.
    */
   nextStep(step: Step): Step | null
+
+  /**
+   * Returns the previous Step before the given step, or null if at 'EO'.
+   */
+  prevStep(step: Step): Step | null
 
   /**
    * Returns all saved sequences for the given step whose parentId matches
