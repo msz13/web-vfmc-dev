@@ -161,6 +161,7 @@
     justify-content: center;
     gap: 4px;
     padding: 8px 0;
+    min-height: 44px;
     border: none;
     border-radius: var(--radius-md);
     font-size: 11px;

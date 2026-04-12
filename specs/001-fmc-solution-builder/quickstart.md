@@ -122,10 +122,10 @@ Per constitution principle III:
 | Concept | Where | Summary |
 |---|---|---|
 | `Move` | `types.ts` | Single face turn; `notation: "R" \| "U'" \| "F2"` etc. |
-| `Variation` | `types.ts` | Saved move sequence for one step; has `children[]` for next step |
-| `Session` | `types.ts` | One FMC attempt; holds scramble + `rootVariations[]` (EO-level) |
-| `SolutionPath` | `types.ts` | One chain of variations root→leaf; computed, not stored |
-| `STEP_ORDER` | `types.ts` | `['EO','DR','HTR','Floppy','Finish','Insertions']` |
+| `Sequence` | `types.ts` | Saved move sequence for one step; has `stepName`, `moves[]`, and `parentId` linking to the prior step's sequence |
+| `SessionState` | `types.ts` | Serialisable snapshot of one FMC attempt; holds `scramble`, `sequences[]`, and `activeSequenceIds` per step |
+| `Active Path` | `session.ts` | The currently selected chain of sequences from EO through to the latest saved step; computed via `getActiveSolution()` |
+| `STEP_ORDER` | `types.ts` | `['EO','DR','HTR','Floppy','Finish']` — the five solving phases in order |
 
 ---
 

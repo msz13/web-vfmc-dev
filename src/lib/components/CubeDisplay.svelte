@@ -3,7 +3,7 @@
 
   let { alg }: { alg: string } = $props();
 
-  let player: HTMLElement | null = null;
+  let player: (HTMLElement & { experimentalSetupAlg?: string; alg?: string }) | null = null;
   let loaded = $state(false);
 
   onMount(async () => {
@@ -13,8 +13,8 @@
 
   $effect(() => {
     if (loaded && player) {
-      (player as any).experimentalSetupAlg = alg;
-      (player as any).alg = '';
+      player.experimentalSetupAlg = alg;
+      player.alg = '';
     }
   });
 </script>

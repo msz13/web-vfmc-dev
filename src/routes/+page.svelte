@@ -6,19 +6,20 @@
   import MobileLayout from '$lib/components/MobileLayout.svelte';
 
   const session = new Session();
+  const restoredState = session.loadSession();
 
-  let scramble = $state('');
-  let solution = $state('');
-  let cubeState = $state('');
-  let stepByStep = $state('');
-  let currentInput = $state('');
-  let activeStep = $state<Step>('EO');
+  let scramble = $state(session.getScramble());
+  let solution = $state(session.getActiveSolution());
+  let cubeState = $state(session.getCubeState());
+  let stepByStep = $state(session.getActiveSolutionStepByStep());
+  let currentInput = $state(session.getCurrentInput());
+  let activeStep = $state<Step>(restoredState?.activeStep ?? 'EO');
   let allVariations = $state<Record<Step, { sequences: Sequence[]; activeId: string | undefined }>>({
-    EO: { sequences: [], activeId: undefined },
-    DR: { sequences: [], activeId: undefined },
-    HTR: { sequences: [], activeId: undefined },
-    Floppy: { sequences: [], activeId: undefined },
-    Finish: { sequences: [], activeId: undefined },
+    EO: { sequences: session.getStepVariations('EO'), activeId: session.getActiveSequenceId('EO') },
+    DR: { sequences: session.getStepVariations('DR'), activeId: session.getActiveSequenceId('DR') },
+    HTR: { sequences: session.getStepVariations('HTR'), activeId: session.getActiveSequenceId('HTR') },
+    Floppy: { sequences: session.getStepVariations('Floppy'), activeId: session.getActiveSequenceId('Floppy') },
+    Finish: { sequences: session.getStepVariations('Finish'), activeId: session.getActiveSequenceId('Finish') },
   });
 
   function syncState() {
@@ -34,6 +35,7 @@
       };
     }
     allVariations = vars;
+    session.saveSession();
   }
 
   function handleSetScramble(newScramble: string) {
@@ -143,6 +145,12 @@
 <style>
   .app {
     padding: 16px 24px;
+  }
+
+  @media (max-width: 400px) {
+    .app {
+      padding: 12px 12px;
+    }
   }
 
   .app-header {

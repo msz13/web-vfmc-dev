@@ -27,11 +27,6 @@ function parseMove(notation: string): Move {
   return { notation };
 }
 
-function parseMoveSequence(sequence: string): Move[] {
-  if (sequence.trim() === '') return [];
-  return sequence.trim().split(/\s+/).map(parseMove);
-}
-
 function formatMoves(moves: Move[]): string {
   return moves.map((m) => m.notation).join(' ');
 }

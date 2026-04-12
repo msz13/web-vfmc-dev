@@ -111,11 +111,11 @@
 
 **Purpose**: Persistence, mobile layout, and final validation.
 
-- [ ] T029 Call `session.saveSession()` after every mutation (`addMove`, `undoMove`, `saveSequence`, `setActiveSolution`, `setScramble`, `generateScramble`) for FR-012 localStorage persistence — `src/routes/+page.svelte`
-- [ ] T030 Call `session.loadSession()` on app startup to restore in-progress session; fall back to empty state if null (SC-005) — `src/routes/+page.svelte`
-- [ ] T031 [P] Mobile layout pass: verify 375px viewport, no horizontal scroll, all buttons ≥44×44px, step tabs reachable by thumb (SC-004) — `src/lib/components/MoveInput.svelte`, `src/routes/+page.svelte`
-- [ ] T032 [P] Update `quickstart.md` key domain concepts table to reflect `Sequence`, `SessionState`, `Active Path`, `STEP_ORDER` without `Insertions` — `specs/001-fmc-solution-builder/quickstart.md`
-- [ ] T033 Run `npm test && npm run lint` and verify all acceptance scenarios from spec.md manually in browser, including US2 scenario 4: enter moves → press "Reset to Scramble" → moves cleared → cube returns to scrambled state → scramble unchanged
+- [X] T029 Call `session.saveSession()` after every mutation (`addMove`, `undoMove`, `saveSequence`, `setActiveSolution`, `setScramble`, `generateScramble`) for FR-012 localStorage persistence — `src/routes/+page.svelte`
+- [X] T030 Call `session.loadSession()` on app startup to restore in-progress session; fall back to empty state if null (SC-005) — `src/routes/+page.svelte`
+- [X] T031 [P] Mobile layout pass: verify 375px viewport, no horizontal scroll, all buttons ≥44×44px, step tabs reachable by thumb (SC-004) — `src/lib/components/MoveInput.svelte`, `src/routes/+page.svelte`
+- [X] T032 [P] Update `quickstart.md` key domain concepts table to reflect `Sequence`, `SessionState`, `Active Path`, `STEP_ORDER` without `Insertions` — `specs/001-fmc-solution-builder/quickstart.md`
+- [X] T033 Run `npm test && npm run lint` and verify all acceptance scenarios from spec.md manually in browser, including US2 scenario 4: enter moves → press "Reset to Scramble" → moves cleared → cube returns to scrambled state → scramble unchanged
 
 ---
 

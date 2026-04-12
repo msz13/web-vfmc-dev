@@ -78,6 +78,7 @@
   .step-tab {
     flex: 1;
     padding: 8px 4px;
+    min-height: 44px;
     font-size: 11px;
     font-weight: 500;
     font-family: var(--mono);

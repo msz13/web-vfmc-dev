@@ -190,6 +190,7 @@
     font-size: 14px;
     font-weight: 500;
     padding: 10px 0 6px;
+    min-height: 44px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -237,6 +238,7 @@
     font-size: 13px;
     font-weight: 600;
     padding: 10px 0;
+    min-height: 44px;
     border: none;
     transition: all 0.12s;
   }
