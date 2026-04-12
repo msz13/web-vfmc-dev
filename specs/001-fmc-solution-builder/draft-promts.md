@@ -86,16 +86,19 @@ Errors to fix:
     - dark theme
     - toogle solution view/keybord
     - you should be able to do every action without scrolling and always see cube
-- session state should't have updateat property, remove all assignmentsof update at field
+- [x] session state should't have updateat property, remove all assignmentsof update at field
 - add move - enum (moves) tpye on input, not need parsing
-- sprawdzic get step variation - niepotrzebnie zwraca variancje dla parent id, powinna zwrotcic tylko wszystkie wariance dla step
-- refactor handle change in variation list, chacking if page, get previous step in session
+- [x]sprawdzic get step variation - niepotrzebnie zwraca variancje dla parent id, powinna zwrotcic tylko wszystkie wariance dla step
+- [x] refactor handle change in variation list, chacking if page, get previous step in session
+- refactor page components - simplify i three components
+- ermove current input from move input
+
 
 FIX:
 -[ x ] on variation list, when you chose select, state should be reseted to previous step 
 
 TODO later 
-- enter solution  keybord only
+- enter solution keybord only
 - cube rotations
 
 
