@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --bg:          #0c0c10;
+  --surface-1:   #14141a;
+  --surface-2:   #1c1c24;
+  --surface-3:   #2a2a36;
+  --border:      #2e2e3a;
+  --accent:      #54e8b0;
+  --accent-dim:  rgba(84, 232, 176, 0.09);
+  --red:         #f25c5c;
+  --text:        #e4e4ec;
+  --text-dim:    #6e6e82;
+  --mono:        "JetBrains Mono", "Fira Code", "SF Mono", ui-monospace, monospace;
+  --sans:        "DM Sans", "Segoe UI", system-ui, sans-serif;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   10px;
+
+  --face-R: #f0c746;
+  --face-U: #e87e3c;
+  --face-F: #e85c8a;
+  --face-L: #c06cf2;
+  --face-D: #5c9cf2;
+  --face-B: #54e8b0;
+
+  --step-EO:     #f0c746;
+  --step-DR:     #e87e3c;
+  --step-HTR:    #e85c8a;
+  --step-FR:     #c06cf2;
+  --step-Finish: #54e8b0;
+
+  --step-EO-dim:     rgba(240, 199, 70, 0.10);
+  --step-DR-dim:     rgba(232, 126, 60, 0.10);
+  --step-HTR-dim:    rgba(232, 92, 138, 0.10);
+  --step-FR-dim:     rgba(192, 108, 242, 0.10);
+  --step-Finish-dim: rgba(84, 232, 176, 0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 4px; }
