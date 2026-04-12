@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && cp node_modules/cubing/dist/lib/cubing/chunks/*.js build/_app/immutable/chunks/",
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint ."
