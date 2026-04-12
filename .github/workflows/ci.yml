@@ -48,6 +48,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          BASE_PATH: '/web-vfmc-dev'
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
