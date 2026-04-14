@@ -1,4 +1,4 @@
-Feature: Cube Rotation and Solving Substeps
+Feature: Cube Rotation 
 
 User can applay cube rotations on x, y, z axis. 
 Inverse moves are not avaiblie.
@@ -33,29 +33,24 @@ Inverse moves are not avaiblie.
       When the user inputs a move "D"
       Then the cube state is "R U F D y"
 
+Feature: Selecting substeps
   # ---------------------------------------------------------------------------
   # EO substeps and their canonical cube orientation
   # ---------------------------------------------------------------------------
 
   Rule: Selecting an EO substep sets the canonical front face for that axis
 
-    Scenario: Selecting eofb sets front face to F
+    Scenario Outline: Selecting an EO substep sets the canonical cube orientation
       Given the EO step is active
-      When the user selects substep "eofb"
-      Then the cube state is ""
-      And the substep label "eofb" is highlighted as active
+      When the user selects substep "<substep>"
+      Then the cube state is "<rotation>"
+      And the substep label "<substep>" is highlighted as active
 
-    Scenario: Selecting eorl sets front face to R
-      Given the EO step is active
-      When the user selects substep "eorl"
-      Then the cube state is "y"
-      And the substep label "eorl" is highlighted as active
-
-    Scenario: Selecting eoud sets front face to U
-      Given the EO step is active
-      When the user selects substep "eoud"
-      Then the cube state is "x"
-      And the substep label "eoud" is highlighted as active
+      Examples:
+        | substep | rotation |
+        | eofb    |          |
+        | eorl    | y        |
+        | eoud    | x        |
    
 
     Scenario: Switching between EO substeps updates the cube orientation immediately
@@ -73,12 +68,20 @@ Inverse moves are not avaiblie.
     Scenario: Cube rotation resets when a new substep is selected
       Given the user has manually rotated the cube to an arbitrary orientation "z"
       When the user selects the substep "eofb"
-      Then the cube display resets to the canonical orientation for that substep "z"
+      Then the cube display resets to the canonical orientation for that substep ""
 
     Scenario: User adds manual rotations canonical orientation of that substep is preserved
       Given the user selects the substep "eorl"      
       When the user has manually rotated the cube to an arbitrary orientation "z"
       Then the cube state is "y z"
+
+    Scenario: Substep is preserved after saving and selecting active solution
+      Given the user selects the substep "eorl" 
+      And saves sequence and clear variation
+      When user selects this sequence
+      Then cube state is "y"
+      And the substep label "eorl" highlighted as active
+
 
   # ---------------------------------------------------------------------------
   # DR substeps and their canonical cube orientation
@@ -86,37 +89,22 @@ Inverse moves are not avaiblie.
 
   Rule: Selecting a DR substep sets the canonical front face for that axis
 
-    Scenario: Selecting drud keeps the default orientation (F face at front)
-      Given the DR step is active
-      When the user selects substep "drud"
-      Then the cube state is ""
-      And the substep label "drud" is highlighted as active
+    Scenario Outline: Selecting dr orientation
+      Given cube was rotaded on axis <initial_rotation>
+      When the user selects <substep>
+      Then the cube state is <rotation>
+      And the substep label <substep> is highlighted as active
+      Examples:
+          | initial_rotation | substep | rotation |
+          | "" | drud | ""  |
+          | "" | drrl | z   |
+          | y  | drud | y   |
+          | y  | drfb | y z |
+          | x  | drfb | x   |
+          | x  | drrl | z z | 
 
-    Scenario: Selecting drrl sets front face to R
-      Given the DR step is active
-      When the user selects substep "drrl"
-      Then the cube state is "y"
-      And the substep label "drrl" is highlighted as active
+  
 
-    Scenario: Selecting drfb sets front face to F
-      Given the DR step is active
-      When the user selects substep "drfb"
-      Then the cube state is "x"
-      And the substep label "drud" is highlighted as active
-
-    Scenario: DR substep is reflected in solution display
-      Given the DR step is active and substep "drrl" is selected
-      When the user saves a move sequence
-      Then the step-by-step display appends the line:
-        """
-        {moves} // DR-RL ({stepCount}/{runningTotal})
-        """
-
-    Scenario: Switching EO substep axis does not alter the DR substep
-      Given the EO step has a saved variation with substep "eorl"
-      And the DR step is active with substep "drud"
-      When the user switches to a different EO variation with substep "eofb"
-      Then the DR substep remains "drud"
 
   # ---------------------------------------------------------------------------
   # Substep persistence and session restore
