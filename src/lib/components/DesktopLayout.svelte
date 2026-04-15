@@ -17,6 +17,10 @@
     activeStep: Step;
     allVariations: Record<Step, { sequences: Sequence[]; activeId: string | undefined }>;
     hasMovesToReset: boolean;
+    activeSubstep: string | undefined;
+    availableDRSubsteps: readonly string[];
+    onApplyRotation: (axis: 'x' | 'y' | 'z') => void;
+    onSelectSubstep: (substep: string) => void;
     onSetScramble: (s: string) => void;
     onGenerateScramble: () => Promise<void>;
     onAddMove: (notation: string) => void;
@@ -38,6 +42,10 @@
     activeStep,
     allVariations,
     hasMovesToReset,
+    activeSubstep,
+    availableDRSubsteps,
+    onApplyRotation,
+    onSelectSubstep,
     onSetScramble,
     onGenerateScramble,
     onAddMove,
@@ -75,10 +83,14 @@
         <MoveInput
           step={activeStep}
           {currentInput}
+          {activeSubstep}
+          {availableDRSubsteps}
           onAddMove={onAddMove}
           onUndoMove={onUndoMove}
           onSaveSequence={onSaveSequence}
           onClearInput={onClearInput}
+          onApplyRotation={onApplyRotation}
+          onSelectSubstep={onSelectSubstep}
         />
       {:else}
         <div class="empty-state">Enter a scramble to begin.</div>

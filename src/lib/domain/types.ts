@@ -5,6 +5,10 @@ export type Step = 'EO' | 'DR' | 'HTR' | 'Floppy' | 'Finish';
 
 export const STEP_ORDER: Step[] = ['EO', 'DR', 'HTR', 'Floppy', 'Finish'];
 
+export type EOSubstep = 'eofb' | 'eorl' | 'eoud';
+export type DRSubstep = 'drud' | 'drrl' | 'drfb';
+export type Substep = EOSubstep | DRSubstep;
+
 export interface Move {
   notation: string; // e.g. "R", "U'", "F2"
   nissContext?: 'normal' | 'inverse'; // reserved for feature 002, always undefined here
@@ -15,6 +19,7 @@ export interface Sequence {
   stepName: Step;
   moves: Move[];
   parentId: ID | null; // null for EO sequences
+  substep?: Substep; // substep active when this sequence was saved
 }
 
 export interface SessionState {
@@ -25,6 +30,8 @@ export interface SessionState {
   activeStep: Step;
   currentInput: Move[]; // unsaved moves being typed
   createdAt: number; // Unix ms
+  activeSubsteps: Partial<Record<Step, Substep>>; // active substep per step
+  manualRotations: string[]; // user-applied rotation tokens (x/y/z)
 }
 
 /** Alg string (scramble + moves) suitable for TwistyPlayer display */

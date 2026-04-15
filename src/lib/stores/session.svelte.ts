@@ -1,6 +1,7 @@
 import { Session } from '$lib/domain/session.js';
 import { STEP_ORDER } from '$lib/domain/types.js';
-import type { Sequence, Step } from '$lib/domain/types.js';
+import type { Sequence, Step, Substep, EOSubstep } from '$lib/domain/types.js';
+import { validDRSubsteps, isEOSubstep } from '$lib/domain/substeps.js';
 
 type StepVariations = Record<Step, { sequences: Sequence[]; activeId: string | undefined }>;
 
@@ -20,7 +21,13 @@ export class SessionStore {
 	cubeState = $state('');
 	stepByStep = $state('');
 	currentInput = $state('');
+	cubeRotations = $state('');
 	activeStep = $state<Step>('EO');
+	activeSubstep = $state<Substep | undefined>(undefined);
+	#eoSubstep = $state<EOSubstep | undefined>(undefined);
+	availableDRSubsteps = $derived(
+		this.#eoSubstep ? validDRSubsteps(this.#eoSubstep) : (['drud', 'drrl', 'drfb'] as const)
+	);
 	allVariations = $state<StepVariations>(emptyVariations());
 	hasMovesToReset = $derived(
 		!!this.scramble &&
@@ -40,6 +47,10 @@ export class SessionStore {
 		this.cubeState = this.#session.getCubeState();
 		this.stepByStep = this.#session.getActiveSolutionStepByStep();
 		this.currentInput = this.#session.getCurrentInput();
+		this.cubeRotations = this.#session.getCubeRotations();
+		this.activeSubstep = this.#session.getActiveSubstep(this.activeStep);
+		const rawEOSubstep = this.#session.getActiveSubstep('EO');
+		this.#eoSubstep = rawEOSubstep && isEOSubstep(rawEOSubstep) ? rawEOSubstep : undefined;
 		const vars = {} as StepVariations;
 		for (const step of STEP_ORDER) {
 			vars[step] = {
@@ -53,12 +64,14 @@ export class SessionStore {
 
 	setScramble(s: string) {
 		this.#session.setScramble(s);
+		this.#session.setActiveStep('EO'); // triggers default substep auto-apply
 		this.activeStep = 'EO';
 		this.#sync();
 	}
 
 	async generateScramble() {
 		await this.#session.generateScramble();
+		this.#session.setActiveStep('EO'); // triggers default substep auto-apply
 		this.activeStep = 'EO';
 		this.#sync();
 	}
@@ -112,6 +125,16 @@ export class SessionStore {
 	resetToScramble() {
 		this.#session.resetToScramble();
 		this.activeStep = 'EO';
+		this.#sync();
+	}
+
+	applyRotation(axis: 'x' | 'y' | 'z') {
+		this.#session.applyRotation(axis);
+		this.#sync();
+	}
+
+	selectSubstep(substep: Substep) {
+		this.#session.setSubstep(substep);
 		this.#sync();
 	}
 }

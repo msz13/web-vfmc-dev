@@ -101,7 +101,7 @@ Feature: Selecting substeps
           | y  | drud | y   |
           | y  | drfb | y z |
           | x  | drfb | x   |
-          | x  | drrl | z z | 
+          | x  | drrl | x z | 
 
   
 
@@ -128,7 +128,26 @@ Feature: Selecting substeps
   # Default substep on step activation
   # ---------------------------------------------------------------------------
 
-  Rule: A step activates with a default substep when none has been selected
+  Rule: Not all DR substeps are valid on given EO substep
+
+    Scenario: Avaible DR substeps
+      Given EO substep was <EO substep>
+      When DR is active
+      Then only two substeps are avaible <DR substep1> and <DR Subsep2>
+      Examples:
+          | EO Subsep | DR substep1 | DR substep1  |
+          | eofb | drud  | drrl  |
+          | eorl | drud  | drfb  |
+          | eoud | drrl  | drfb  |
+     
+
+    Scenario: DR step defaults to drud when first activated
+      Given the EO step has a saved variation
+      When the user advances to the DR step for the first time
+      Then the active DR substep is "drud"
+      And the cube display shows F at the front
+
+    Rule: A step activates with a default substep when none has been selected
 
     Scenario: EO step defaults to eofb when first activated
       Given a new session with a scramble set

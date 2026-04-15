@@ -1,5 +1,7 @@
 import type { ID, Move, Sequence, SessionState, Step } from './types.js';
 import { STEP_ORDER } from './types.js';
+import type { Substep } from './types.js';
+import { eoSubstepRotation, drSubstepRotation, defaultSubstep, isEOSubstep, isDRSubstep } from './substeps.js';
 import { randomScrambleForEvent } from 'cubing/scramble';
 import { loadSession as persistenceLoad, saveSession as persistenceSave, clearSession as persistenceClear } from './persistence.js';
 
@@ -41,6 +43,8 @@ function emptyState(scramble: string): SessionState {
     activeStep: 'EO',
     currentInput: [],
     createdAt: now,
+    activeSubsteps: {},
+    manualRotations: [],
   };
 }
 
@@ -88,6 +92,13 @@ export class Session {
     this.state.activeStep = step;
     this.state.currentInput = [];
 
+    // Auto-apply default substep if none saved for this step (US6)
+    if (this.state.activeSubsteps[step] === undefined) {
+      const def = defaultSubstep(step);
+      if (def !== undefined) {
+        this.setSubstep(def);
+      }
+    }
   }
 
   addMove(move: string): void {
@@ -114,7 +125,8 @@ export class Session {
       id: crypto.randomUUID(),
       stepName: step,
       moves: [...this.state.currentInput],
-      parentId
+      parentId,
+      substep: this.state.activeSubsteps[step],
     };
 
     this.state.sequences.push(seq);
@@ -139,6 +151,12 @@ export class Session {
       delete this.state.activeSequenceIds[STEP_ORDER[i]];
     }
 
+    // Restore substep from saved sequence (US5)
+    const seq = this.state.sequences.find((s) => s.id === sequenceId);
+    if (seq?.substep !== undefined) {
+      this.state.activeSubsteps[step] = seq.substep;
+      this.state.manualRotations = [];
+    }
   }
 
   getActiveSolution(): string {
@@ -156,9 +174,37 @@ export class Session {
     return parts.filter((p) => p.trim() !== '').join(' ');
   }
 
+  setSubstep(substep: Substep): void {
+    this.state.activeSubsteps[this.state.activeStep] = substep;
+    this.state.manualRotations = [];
+  }
+
+  getActiveSubstep(step: Step): Substep | undefined {
+    return this.state.activeSubsteps[step];
+  }
+
+  applyRotation(axis: 'x' | 'y' | 'z'): void {
+    this.state.manualRotations.push(axis);
+  }
+
+  getCubeRotations(): string {
+    const activeSubstep = this.state.activeSubsteps[this.state.activeStep];
+    let canonical = '';
+    if (activeSubstep && isEOSubstep(activeSubstep)) {
+      canonical = eoSubstepRotation(activeSubstep);
+    } else if (activeSubstep && isDRSubstep(activeSubstep)) {
+      const eoSubstep = this.state.activeSubsteps['EO'];
+      const eoRotation = eoSubstep && isEOSubstep(eoSubstep) ? eoSubstepRotation(eoSubstep) : '';
+      canonical = drSubstepRotation(activeSubstep, eoRotation);
+    }
+    const parts = [canonical, ...this.state.manualRotations].filter((s) => s !== '');
+    return parts.join(' ');
+  }
+
   getCubeState(): string {
     const solution = this.getActiveSolution();
-    return [this.state.scramble, solution].filter((p) => p.trim() !== '').join(' ');
+    const rotations = this.getCubeRotations();
+    return [this.state.scramble, solution, rotations].filter((p) => p.trim() !== '').join(' ');
   }
 
   getScramble(): string {
@@ -194,7 +240,13 @@ export class Session {
 
   loadSession(): SessionState | null {
     const loaded = persistenceLoad();
-    if (loaded) this.state = loaded;
+    if (loaded) {
+      this.state = {
+        ...loaded,
+        activeSubsteps: loaded.activeSubsteps ?? {},
+        manualRotations: loaded.manualRotations ?? [],
+      };
+    }
     return loaded;
   }
 
