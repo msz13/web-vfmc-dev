@@ -73,20 +73,20 @@
 
 ### Domain TDD Tests (write first, confirm failing)
 
-- [ ] T012 Write failing tests for `setSubstep` (EO substeps), `getActiveSubstep`, and `getCubeRotations` (canonical + manual combined) in `src/lib/domain/session.test.ts` — cover: canonical rotation set on substep select, manual rotations cleared on substep switch, combined "canonical + manual" output
+- [X] T012 Write failing tests for `setSubstep` (EO substeps), `getActiveSubstep`, and `getCubeRotations` (canonical + manual combined) in `src/lib/domain/session.test.ts` — cover: canonical rotation set on substep select, manual rotations cleared on substep switch, combined "canonical + manual" output
 
 ### Domain Implementation
 
-- [ ] T013 [US2] Add `setSubstep(substep)` to `Session` in `src/lib/domain/session.ts` — for EO substeps: stores in `state.activeSubsteps[activeStep]`, clears `state.manualRotations`
-- [ ] T014 [US2] Add `getActiveSubstep(step)` to `Session` in `src/lib/domain/session.ts`
-- [ ] T015 [US2] Update `getCubeRotations()` in `src/lib/domain/session.ts` to prepend the canonical rotation (`eoSubstepRotation(activeSubstep)`) before `manualRotations` — make T012 tests pass
+- [X] T013 [US2] Add `setSubstep(substep)` to `Session` in `src/lib/domain/session.ts` — for EO substeps: stores in `state.activeSubsteps[activeStep]`, clears `state.manualRotations`
+- [X] T014 [US2] Add `getActiveSubstep(step)` to `Session` in `src/lib/domain/session.ts`
+- [X] T015 [US2] Update `getCubeRotations()` in `src/lib/domain/session.ts` to prepend the canonical rotation (`eoSubstepRotation(activeSubstep)`) before `manualRotations` — make T012 tests pass
 
 ### Store & UI
 
-- [ ] T016 [US2] Add `activeSubstep = $state<Substep | undefined>(undefined)` and `selectSubstep(substep)` to `SessionStore` in `src/lib/stores/session.svelte.ts`; update `#sync()` to set `activeSubstep`
-- [ ] T017 [P] [US2] Create `src/lib/components/SubstepSelector.svelte` — renders labelled buttons for a given `substeps: Substep[]` prop; highlights the `activeSubstep` prop; dispatches `select` event with substep value; ≥ 44×44px touch targets
-- [ ] T018 [US2] Integrate `SubstepSelector` into `src/lib/components/MobileLayout.svelte` passing EO substeps `['eofb', 'eorl', 'eoud']` when EO step is active; wire `select` event to `store.selectSubstep`
-- [ ] T019 [US2] Integrate `SubstepSelector` into `src/lib/components/DesktopLayout.svelte` (same as T018)
+- [X] T016 [US2] Add `activeSubstep = $state<Substep | undefined>(undefined)` and `selectSubstep(substep)` to `SessionStore` in `src/lib/stores/session.svelte.ts`; update `#sync()` to set `activeSubstep`
+- [X] T017 [P] [US2] Create `src/lib/components/SubstepSelector.svelte` — renders labelled buttons for a given `substeps: Substep[]` prop; highlights the `activeSubstep` prop; dispatches `select` event with substep value; ≥ 44×44px touch targets
+- [X] T018 [US2] Integrate `SubstepSelector` into `src/lib/components/MobileLayout.svelte` passing EO substeps `['eofb', 'eorl', 'eoud']` when EO step is active; wire `select` event to `store.selectSubstep`
+- [X] T019 [US2] Integrate `SubstepSelector` into `src/lib/components/DesktopLayout.svelte` (same as T018)
 
 **Checkpoint**: US2 fully functional. Selecting EO substep updates TwistyPlayer orientation. Active substep label is highlighted. Manual rotation on top works. Switching substep clears manual rotation. `npm test` passes.
 
@@ -100,20 +100,37 @@
 
 ### Domain TDD Tests (write first, confirm failing)
 
-- [ ] T020 Write failing tests for `drSubstepRotation` covering all 6 spec-defined cases in `src/lib/domain/substeps.test.ts`
-- [ ] T021 Write failing tests for `setSubstep` with DR substeps in `src/lib/domain/session.test.ts` — cover: DR substep applies computed final rotation, clears manual rotations
+- [X] T020 Write failing tests for `drSubstepRotation` covering all 6 spec-defined cases in `src/lib/domain/substeps.test.ts`
+- [X] T021 Write failing tests for `setSubstep` with DR substeps in `src/lib/domain/session.test.ts` — cover: DR substep applies computed final rotation, clears manual rotations
 
 ### Domain Implementation
 
-- [ ] T022 [US3] Implement `drSubstepRotation(substep, currentRotation)` in `src/lib/domain/substeps.ts` using the lookup table from research.md — make T020 tests pass
-- [ ] T023 [US3] Extend `setSubstep(substep)` in `src/lib/domain/session.ts` to handle DR substeps: calls `drSubstepRotation(substep, currentCanonicalRotation)` and stores the result as the new canonical rotation state — make T021 tests pass
+- [X] T022 [US3] Implement `drSubstepRotation(substep, currentRotation)` in `src/lib/domain/substeps.ts` using the lookup table from research.md — make T020 tests pass
+- [X] T023 [US3] Extend `setSubstep(substep)` in `src/lib/domain/session.ts` to handle DR substeps: calls `drSubstepRotation(substep, currentCanonicalRotation)` and stores the result as the new canonical rotation state — make T021 tests pass
 
 ### UI
 
-- [ ] T024 [US3] Update `MobileLayout.svelte` to show DR substep buttons `['drud', 'drrl', 'drfb']` when DR step is active (reuses `SubstepSelector` component from T017)
-- [ ] T025 [US3] Update `DesktopLayout.svelte` with same DR substep wiring as T024
+- [X] T024 [US3] Update `MobileLayout.svelte` to show DR substep buttons `['drud', 'drrl', 'drfb']` when DR step is active (reuses `SubstepSelector` component from T017)
+- [X] T025 [US3] Update `DesktopLayout.svelte` with same DR substep wiring as T024
 
-**Checkpoint**: US3 fully functional. Selecting a DR substep after an EO substep produces the correct combined orientation per the spec examples. `npm test` passes.
+### DR Substep Filtering (FR-012)
+
+Only two DR substeps are valid per EO substep. The UI must filter the displayed DR options.
+
+#### Domain TDD Tests (write first, confirm failing)
+
+- [X] T039 Write failing tests for `validDRSubsteps(eoSubstep)` in `src/lib/domain/substeps.test.ts` — covers all three EO cases: eofb→[drud,drrl], eorl→[drud,drfb], eoud→[drrl,drfb]
+
+#### Domain Implementation
+
+- [X] T040 [US3] Implement `validDRSubsteps(eoSubstep: EOSubstep): [DRSubstep, DRSubstep]` in `src/lib/domain/substeps.ts` — make T039 tests pass
+
+#### Store & UI
+
+- [X] T041 [US3] Add `availableDRSubsteps = $derived(...)` to `SessionStore` in `src/lib/stores/session.svelte.ts` — returns `validDRSubsteps(activeEOSubstep)` when on DR step, full list when no EO substep set
+- [X] T042 [US3] Update `MoveInput.svelte` to pass `availableDRSubsteps` (from store via prop) as the DR substep list instead of the full `['drud','drrl','drfb']`
+
+**Checkpoint**: US3 fully functional. Selecting a DR substep after an EO substep produces the correct combined orientation per the spec examples. DR SubstepSelector shows only valid options for the active EO substep. `npm test` passes.
 
 ---
 
@@ -127,15 +144,15 @@
 
 ### Domain TDD Tests (write first, confirm failing)
 
-- [ ] T026 [P] Write failing tests for session persistence round-trip (`activeSubsteps` and `manualRotations` serialised and restored) in `src/lib/domain/session.test.ts`
-- [ ] T027 [P] Write failing tests for `saveSequence` recording `Sequence.substep` and `setActiveSolution` restoring the substep in `src/lib/domain/session.test.ts`
+- [X] T026 [P] Write failing tests for session persistence round-trip (`activeSubsteps` and `manualRotations` serialised and restored) in `src/lib/domain/session.test.ts`
+- [X] T027 [P] Write failing tests for `saveSequence` recording `Sequence.substep` and `setActiveSolution` restoring the substep in `src/lib/domain/session.test.ts`
 
 ### Domain Implementation
 
-- [ ] T028 [US4] Update `emptyState()` in `src/lib/domain/session.ts` to initialise `activeSubsteps: {}` and `manualRotations: []`
-- [ ] T029 [US4] Update `loadSession()` in `src/lib/domain/session.ts` to apply backward-compatible defaults for missing `activeSubsteps` and `manualRotations` fields — make T026 tests pass
-- [ ] T030 [US5] Update `saveSequence()` in `src/lib/domain/session.ts` to record `activeSubsteps[activeStep]` as `Sequence.substep`
-- [ ] T031 [US5] Update `setActiveSolution()` in `src/lib/domain/session.ts` to restore `activeSubsteps[step]` and clear `manualRotations` when the selected sequence has a `substep` field — make T027 tests pass
+- [X] T028 [US4] Update `emptyState()` in `src/lib/domain/session.ts` to initialise `activeSubsteps: {}` and `manualRotations: []`
+- [X] T029 [US4] Update `loadSession()` in `src/lib/domain/session.ts` to apply backward-compatible defaults for missing `activeSubsteps` and `manualRotations` fields — make T026 tests pass
+- [X] T030 [US5] Update `saveSequence()` in `src/lib/domain/session.ts` to record `activeSubsteps[activeStep]` as `Sequence.substep`
+- [X] T031 [US5] Update `setActiveSolution()` in `src/lib/domain/session.ts` to restore `activeSubsteps[step]` and clear `manualRotations` when the selected sequence has a `substep` field — make T027 tests pass
 
 **Checkpoint**: US4 & US5 functional. Session restores substep and orientation after page refresh. Selecting a saved sequence restores its substep. `npm test` passes.
 
@@ -149,13 +166,13 @@
 
 ### Domain TDD Tests (write first, confirm failing)
 
-- [ ] T032 [P] Write failing tests for `defaultSubstep` in `src/lib/domain/substeps.test.ts` — returns `'eofb'` for `'EO'`, `'drud'` for `'DR'`, `undefined` for other steps
-- [ ] T033 [P] Write failing tests for `setActiveStep` auto-applying default substep when none saved in `src/lib/domain/session.test.ts`
+- [X] T032 [P] Write failing tests for `defaultSubstep` in `src/lib/domain/substeps.test.ts` — returns `'eofb'` for `'EO'`, `'drud'` for `'DR'`, `undefined` for other steps
+- [X] T033 [P] Write failing tests for `setActiveStep` auto-applying default substep when none saved in `src/lib/domain/session.test.ts`
 
 ### Domain Implementation
 
-- [ ] T034 [US6] Implement `defaultSubstep(step)` in `src/lib/domain/substeps.ts` — make T032 tests pass
-- [ ] T035 [US6] Update `setActiveStep(step)` in `src/lib/domain/session.ts` to call `setSubstep(defaultSubstep(step))` when `getActiveSubstep(step)` is `undefined` — make T033 tests pass
+- [X] T034 [US6] Implement `defaultSubstep(step)` in `src/lib/domain/substeps.ts` — make T032 tests pass
+- [X] T035 [US6] Update `setActiveStep(step)` in `src/lib/domain/session.ts` to call `setSubstep(defaultSubstep(step))` when `getActiveSubstep(step)` is `undefined` — make T033 tests pass
 
 **Checkpoint**: US6 functional. No user action needed to get a valid cube orientation when entering EO or DR for the first time. `npm test` passes.
 

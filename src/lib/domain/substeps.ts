@@ -1,5 +1,11 @@
 import type { EOSubstep, DRSubstep, Substep, Step } from './types.js';
 
+const VALID_DR_SUBSTEPS: Record<EOSubstep, [DRSubstep, DRSubstep]> = {
+  eofb: ['drud', 'drrl'],
+  eorl: ['drud', 'drfb'],
+  eoud: ['drrl', 'drfb'],
+};
+
 const EO_CANONICAL: Record<EOSubstep, string> = {
   eofb: '',
   eorl: 'y',
@@ -41,6 +47,11 @@ export function drSubstepRotation(substep: DRSubstep, currentRotation: string): 
 /** Returns the default substep for a step, or undefined if the step has no substep concept. */
 export function defaultSubstep(step: Step): Substep | undefined {
   return DEFAULT_SUBSTEP[step];
+}
+
+/** Returns the two valid DR substeps for a given EO substep (FR-012). */
+export function validDRSubsteps(eoSubstep: EOSubstep): [DRSubstep, DRSubstep] {
+  return VALID_DR_SUBSTEPS[eoSubstep];
 }
 
 /** Type guards */

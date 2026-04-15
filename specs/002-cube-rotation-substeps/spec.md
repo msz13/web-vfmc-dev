@@ -59,7 +59,23 @@ An FMC solver who has completed EO selects a DR substep (drud, drrl, drfb). The 
 3. **Given** initial rotation y, **When** the user selects "drud", **Then** the cube state is "y"
 4. **Given** initial rotation y, **When** the user selects "drfb", **Then** the cube state is "y z"
 5. **Given** initial rotation x, **When** the user selects "drfb", **Then** the cube state is "x"
-6. **Given** initial rotation x, **When** the user selects "drrl", **Then** the cube state is "z z"
+6. **Given** initial rotation x, **When** the user selects "drrl", **Then** the cube state is "x z"
+
+**Rule: Not all DR substeps are valid for a given EO substep**
+
+Only two of the three DR substeps are geometrically meaningful for each EO orientation. The UI must display only the valid DR substep options based on the active EO substep:
+
+| EO substep | Available DR substeps |
+|------------|----------------------|
+| eofb       | drud, drrl           |
+| eorl       | drud, drfb           |
+| eoud       | drrl, drfb           |
+
+**Acceptance Scenarios (DR substep filtering)**:
+
+7. **Given** EO substep "eofb" is active, **When** the DR step becomes active, **Then** only "drud" and "drrl" are shown; "drfb" is not available
+8. **Given** EO substep "eorl" is active, **When** the DR step becomes active, **Then** only "drud" and "drfb" are shown; "drrl" is not available
+9. **Given** EO substep "eoud" is active, **When** the DR step becomes active, **Then** only "drrl" and "drfb" are shown; "drud" is not available
 
 ---
 
@@ -129,6 +145,7 @@ When a step (EO or DR) becomes active for the first time in a session with no pr
 - **FR-009**: The active substep MUST be persisted in the session store and restored correctly on page refresh
 - **FR-010**: When a step activates for the first time with no saved substep, the system MUST apply a default substep (eofb for EO, drud for DR)
 - **FR-011**: The active substep MUST be saved as part of a sequence and restored when that sequence is selected
+- **FR-012**: When the DR step is active, the UI MUST display only the two DR substeps that are geometrically valid for the current EO substep (eofb→drud,drrl; eorl→drud,drfb; eoud→drrl,drfb)
 
 ### Key Entities
 

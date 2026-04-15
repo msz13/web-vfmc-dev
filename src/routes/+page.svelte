@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SessionStore } from '$lib/stores/session.svelte.js';
-  import type { Step } from '$lib/domain/types.js';
+  import type { Step, Substep } from '$lib/domain/types.js';
   import DesktopLayout from '$lib/components/DesktopLayout.svelte';
   import MobileLayout from '$lib/components/MobileLayout.svelte';
 
@@ -26,6 +26,9 @@
     onClearVariation:   (step: Step) => store.clearVariation(step),
     onResetToScramble:  () => store.resetToScramble(),
     onApplyRotation:    (axis: 'x' | 'y' | 'z') => store.applyRotation(axis),
+    activeSubstep:         store.activeSubstep,
+    availableDRSubsteps:   store.availableDRSubsteps,
+    onSelectSubstep:       (s: string) => store.selectSubstep(s as Substep),
   });
 </script>
 

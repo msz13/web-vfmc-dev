@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   eoSubstepRotation,
+  drSubstepRotation,
+  defaultSubstep,
+  validDRSubsteps,
   isEOSubstep,
   isDRSubstep,
   isSubstep,
@@ -17,6 +20,58 @@ describe('eoSubstepRotation', () => {
 
   it('returns "x" for eoud', () => {
     expect(eoSubstepRotation('eoud')).toBe('x');
+  });
+});
+
+describe('defaultSubstep', () => {
+  it('returns "eofb" for EO', () => {
+    expect(defaultSubstep('EO')).toBe('eofb');
+  });
+
+  it('returns "drud" for DR', () => {
+    expect(defaultSubstep('DR')).toBe('drud');
+  });
+
+  it('returns undefined for HTR', () => {
+    expect(defaultSubstep('HTR')).toBeUndefined();
+  });
+
+  it('returns undefined for Floppy', () => {
+    expect(defaultSubstep('Floppy')).toBeUndefined();
+  });
+
+  it('returns undefined for Finish', () => {
+    expect(defaultSubstep('Finish')).toBeUndefined();
+  });
+});
+
+describe('drSubstepRotation — 6 spec-defined cases', () => {
+  it('(empty) × drud → empty string', () => {
+    expect(drSubstepRotation('drud', '')).toBe('');
+  });
+
+  it('(empty) × drrl → "z"', () => {
+    expect(drSubstepRotation('drrl', '')).toBe('z');
+  });
+
+  it('"y" × drud → "y"', () => {
+    expect(drSubstepRotation('drud', 'y')).toBe('y');
+  });
+
+  it('"y" × drfb → "y z"', () => {
+    expect(drSubstepRotation('drfb', 'y')).toBe('y z');
+  });
+
+  it('"x" × drfb → "x"', () => {
+    expect(drSubstepRotation('drfb', 'x')).toBe('x');
+  });
+
+  it('"x" × drrl → "x z"', () => {
+    expect(drSubstepRotation('drrl', 'x')).toBe('x z');
+  });
+
+  it('throws for unknown combination', () => {
+    expect(() => drSubstepRotation('drud', 'z z')).toThrow();
   });
 });
 
@@ -69,6 +124,20 @@ describe('isDRSubstep', () => {
 
   it('returns false for empty string', () => {
     expect(isDRSubstep('')).toBe(false);
+  });
+});
+
+describe('validDRSubsteps', () => {
+  it('eofb → [drud, drrl]', () => {
+    expect(validDRSubsteps('eofb')).toEqual(['drud', 'drrl']);
+  });
+
+  it('eorl → [drud, drfb]', () => {
+    expect(validDRSubsteps('eorl')).toEqual(['drud', 'drfb']);
+  });
+
+  it('eoud → [drrl, drfb]', () => {
+    expect(validDRSubsteps('eoud')).toEqual(['drrl', 'drfb']);
   });
 });
 

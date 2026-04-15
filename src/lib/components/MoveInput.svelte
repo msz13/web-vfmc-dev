@@ -2,18 +2,30 @@
   import type { Step } from '$lib/domain/types.js';
   import { STEP_DISPLAY, STEP_FULL_NAME } from '$lib/domain/types.js';
   import CubeRotationControls from './CubeRotationControls.svelte';
+  import SubstepSelector from './SubstepSelector.svelte';
+
+  const EO_SUBSTEPS = ['eofb', 'eorl', 'eoud'] as const;
 
   interface Props {
     step: Step;
     currentInput: string;
+    activeSubstep: string | undefined;
+    availableDRSubsteps: readonly string[];
     onAddMove: (notation: string) => void;
     onUndoMove: () => void;
     onSaveSequence: () => void;
     onClearInput: () => void;
     onApplyRotation: (axis: 'x' | 'y' | 'z') => void;
+    onSelectSubstep: (substep: string) => void;
   }
 
-  let { step, currentInput, onAddMove, onUndoMove, onSaveSequence, onClearInput, onApplyRotation }: Props = $props();
+  let { step, currentInput, activeSubstep, availableDRSubsteps, onAddMove, onUndoMove, onSaveSequence, onClearInput, onApplyRotation, onSelectSubstep }: Props = $props();
+
+  const substeps = $derived(
+    step === 'EO' ? (EO_SUBSTEPS as readonly string[]) :
+    step === 'DR' ? availableDRSubsteps :
+    undefined
+  );
 
   type KbState = 'IDLE' | 'PENDING';
   let kbState: KbState = $state('IDLE');
@@ -127,6 +139,11 @@
       </button>
     {/each}
   </div>
+
+  <!-- Substep selector (EO / DR only) -->
+  {#if substeps}
+    <SubstepSelector {substeps} {activeSubstep} onSelect={onSelectSubstep} />
+  {/if}
 
   <!-- Rotation controls -->
   <CubeRotationControls onRotate={onApplyRotation} />

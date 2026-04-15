@@ -1,6 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { ParseError, Session } from './session.js';
 import { STEP_ORDER } from './types.js';
+
+function makeLocalStorageMock() {
+  const store: Record<string, string> = {};
+  return {
+    getItem: (k: string) => store[k] ?? null,
+    setItem: (k: string, v: string) => { store[k] = v; },
+    removeItem: (k: string) => { delete store[k]; },
+    clear: () => { Object.keys(store).forEach((k) => delete store[k]); },
+  };
+}
 
 describe('ParseError', () => {
   it('is an instance of Error', () => {
@@ -281,6 +291,42 @@ describe('Session.getActiveSolutionStepByStep', () => {
   });
 });
 
+describe('Session.setActiveStep — default substep auto-apply (US6, T033)', () => {
+  it('auto-applies eofb when EO has no saved substep — independent test', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.setActiveStep('EO');
+    expect(session.getActiveSubstep('EO')).toBe('eofb');
+    expect(session.getCubeRotations()).toBe('');
+  });
+
+  it('auto-applies drud when DR has no saved substep', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.addMove('F');
+    session.saveSequence();
+    session.setActiveStep('DR');
+    expect(session.getActiveSubstep('DR')).toBe('drud');
+    expect(session.getCubeRotations()).toBe('');
+  });
+
+  it('does NOT override a substep that is already saved', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eorl');
+    session.setActiveStep('EO'); // re-enter EO — substep already saved
+    expect(session.getActiveSubstep('EO')).toBe('eorl');
+    expect(session.getCubeRotations()).toBe('y');
+  });
+
+  it('does not apply a default for steps without substep concept (HTR)', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setActiveStep('HTR');
+    expect(session.getActiveSubstep('HTR')).toBeUndefined();
+  });
+});
+
 describe('Session.setActiveStep', () => {
   it('changes the active step', () => {
     const session = new Session();
@@ -425,6 +471,242 @@ describe('Session.resetToScramble', () => {
     expect(() => session.resetToScramble()).not.toThrow();
     expect(session.getCubeState()).toBe('');
     expect(session.getActiveSolution()).toBe('');
+  });
+});
+
+describe('Session.setSubstep / getActiveSubstep (EO)', () => {
+  it('setSubstep stores the substep for the active step', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eorl');
+    expect(session.getActiveSubstep('EO')).toBe('eorl');
+  });
+
+  it('getActiveSubstep returns undefined before any substep is set', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    expect(session.getActiveSubstep('EO')).toBeUndefined();
+  });
+
+  it('getCubeRotations returns canonical rotation for eofb (empty)', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eofb');
+    expect(session.getCubeRotations()).toBe('');
+  });
+
+  it('getCubeRotations returns "y" for eorl', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eorl');
+    expect(session.getCubeRotations()).toBe('y');
+  });
+
+  it('getCubeRotations returns "x" for eoud', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eoud');
+    expect(session.getCubeRotations()).toBe('x');
+  });
+
+  it('getCubeRotations combines canonical + manual rotations', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eorl');
+    session.applyRotation('z');
+    expect(session.getCubeRotations()).toBe('y z');
+  });
+
+  it('switching substep clears manualRotations', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eorl');
+    session.applyRotation('z');
+    session.setSubstep('eofb');
+    expect(session.getCubeRotations()).toBe('');
+  });
+
+  it('switching substep updates getActiveSubstep', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eoud');
+    session.setSubstep('eorl');
+    expect(session.getActiveSubstep('EO')).toBe('eorl');
+  });
+
+  it('independent test: eorl → applyRotation z → getCubeRotations = "y z" → eofb → ""', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.setSubstep('eorl');
+    expect(session.getCubeRotations()).toBe('y');
+    session.applyRotation('z');
+    expect(session.getCubeRotations()).toBe('y z');
+    session.setSubstep('eofb');
+    expect(session.getCubeRotations()).toBe('');
+  });
+});
+
+describe('Session.setSubstep with DR substeps', () => {
+  it('setSubstep drrl with no EO rotation → getCubeRotations = "z"', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setActiveStep('DR');
+    session.setSubstep('drrl');
+    expect(session.getCubeRotations()).toBe('z');
+  });
+
+  it('setSubstep drud with no EO rotation → getCubeRotations = ""', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setActiveStep('DR');
+    session.setSubstep('drud');
+    expect(session.getCubeRotations()).toBe('');
+  });
+
+  it('eorl (y) + DR drfb → getCubeRotations = "y z" — independent test', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.setSubstep('eorl');       // EO canonical = "y"
+    session.setActiveStep('DR');
+    session.setSubstep('drfb');       // drSubstepRotation('drfb', 'y') = "y z"
+    expect(session.getCubeRotations()).toBe('y z');
+  });
+
+  it('eoud (x) + DR drrl → getCubeRotations = "x z"', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eoud');       // EO canonical = "x"
+    session.setActiveStep('DR');
+    session.setSubstep('drrl');       // drSubstepRotation('drrl', 'x') = "x z"
+    expect(session.getCubeRotations()).toBe('x z');
+  });
+
+  it('DR setSubstep clears manualRotations', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setActiveStep('DR');
+    session.setSubstep('drud');
+    session.applyRotation('y');
+    session.setSubstep('drrl');       // switching substep clears manual
+    expect(session.getCubeRotations()).toBe('z');
+  });
+
+  it('getActiveSubstep returns DR substep', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setActiveStep('DR');
+    session.setSubstep('drfb');
+    expect(session.getActiveSubstep('DR')).toBe('drfb');
+  });
+});
+
+describe('Session persistence round-trip — US4 (T026)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('saveSession / loadSession restores activeSubsteps', () => {
+    vi.stubGlobal('localStorage', makeLocalStorageMock());
+    const s1 = new Session();
+    s1.setScramble('R U F');
+    s1.setSubstep('eoud');
+    s1.saveSession();
+
+    const s2 = new Session();
+    s2.loadSession();
+    expect(s2.getActiveSubstep('EO')).toBe('eoud');
+    expect(s2.getCubeRotations()).toBe('x');
+  });
+
+  it('saveSession / loadSession restores manualRotations', () => {
+    vi.stubGlobal('localStorage', makeLocalStorageMock());
+    const s1 = new Session();
+    s1.setScramble('R U');
+    s1.setSubstep('eorl');
+    s1.applyRotation('z');
+    s1.saveSession();
+
+    const s2 = new Session();
+    s2.loadSession();
+    expect(s2.getCubeRotations()).toBe('y z');
+  });
+
+  it('loadSession with old data missing activeSubsteps defaults to {}', () => {
+    const mock = makeLocalStorageMock();
+    vi.stubGlobal('localStorage', mock);
+    // Simulate old persisted session without new fields
+    const oldState = {
+      id: 'test-id',
+      scramble: 'R U',
+      sequences: [],
+      activeSequenceIds: {},
+      activeStep: 'EO',
+      currentInput: [],
+      createdAt: Date.now(),
+      // no activeSubsteps, no manualRotations
+    };
+    mock.setItem('vfmc_session_v1', JSON.stringify(oldState));
+
+    const s = new Session();
+    s.loadSession();
+    expect(s.getActiveSubstep('EO')).toBeUndefined();
+    expect(s.getCubeRotations()).toBe('');
+  });
+});
+
+describe('Session saveSequence / setActiveSolution substep — US5 (T027)', () => {
+  it('saveSequence records the active substep on the Sequence', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eorl');
+    session.addMove('F');
+    session.saveSequence();
+    const [seq] = session.getStepVariations('EO');
+    expect(seq.substep).toBe('eorl');
+  });
+
+  it('saveSequence records undefined substep when none set', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.addMove('F');
+    session.saveSequence();
+    const [seq] = session.getStepVariations('EO');
+    expect(seq.substep).toBeUndefined();
+  });
+
+  it('setActiveSolution restores substep from Sequence.substep', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eorl');
+    session.addMove('F');
+    session.saveSequence();
+    const [seq] = session.getStepVariations('EO');
+
+    // Reset substep then restore via setActiveSolution
+    session.setSubstep('eofb');
+    session.setActiveSolution('EO', seq.id);
+    expect(session.getActiveSubstep('EO')).toBe('eorl');
+    expect(session.getCubeRotations()).toBe('y');
+  });
+
+  it('setActiveSolution clears manualRotations when restoring substep', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.setSubstep('eorl');
+    session.addMove('F');
+    session.saveSequence();
+    const [seq] = session.getStepVariations('EO');
+
+    session.applyRotation('z');
+    session.setActiveSolution('EO', seq.id);
+    expect(session.getCubeRotations()).toBe('y'); // no 'z' — manualRotations cleared
+  });
+
+  it('setActiveSolution does not crash when sequence has no substep', () => {
+    const session = new Session();
+    session.setScramble('R U');
+    session.addMove('F');
+    session.saveSequence();
+    const [seq] = session.getStepVariations('EO');
+    expect(() => session.setActiveSolution('EO', seq.id)).not.toThrow();
   });
 });
 

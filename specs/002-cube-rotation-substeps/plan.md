@@ -174,6 +174,12 @@ drSubstepRotation(substep: DRSubstep, currentRotation: string): string
 // Returns default substep for a step
 defaultSubstep(step: Step): Substep | undefined
 
+// Returns the two valid DR substeps for a given EO substep (FR-012)
+validDRSubsteps(eoSubstep: EOSubstep): [DRSubstep, DRSubstep]
+// eofb → ['drud', 'drrl']
+// eorl → ['drud', 'drfb']
+// eoud → ['drrl', 'drfb']
+
 // Returns whether a string is a valid substep for a given step
 isEOSubstep(s: string): s is EOSubstep
 isDRSubstep(s: string): s is DRSubstep
@@ -226,11 +232,11 @@ selectSubstep(substep: Substep): void
 
 ### UI Components
 
-**`SubstepSelector.svelte`**: Button group rendering EO or DR substep labels. Receives `substeps: Substep[]` and `activeSubstep: Substep | undefined` as props; emits `select(substep)` event. Touch targets ≥ 44×44px.
+**`SubstepSelector.svelte`**: Button group rendering EO or DR substep labels. Receives `substeps: Substep[]` and `activeSubstep: Substep | undefined` as props; emits `select(substep)` event. Touch targets ≥ 44×44px. For DR step, `substeps` is filtered to the two valid options via `validDRSubsteps(activeEOSubstep)`.
 
 **`CubeRotationControls.svelte`**: Three buttons (x, y, z). Emits `rotate(axis)`. Touch targets ≥ 44×44px.
 
-Both components integrated into `MobileLayout.svelte` and `DesktopLayout.svelte`.
+Both components integrated into `MoveInput.svelte` (which already has step context).
 
 ---
 
