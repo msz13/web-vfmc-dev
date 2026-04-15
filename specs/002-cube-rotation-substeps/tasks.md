@@ -184,7 +184,7 @@ Only two DR substeps are valid per EO substep. The UI must filter the displayed 
 
 - [ ] T036 [P] Manually verify `CubeRotationControls` and `SubstepSelector` on 375px mobile viewport — confirm all buttons ≥ 44×44px, no overflow
 - [ ] T037 [P] Manually verify full solve flow end-to-end in browser: set scramble → select eorl substep → enter moves → apply manual rotation → save sequence → refresh page → confirm orientation restored
-- [ ] T038 Run `npm test && npm run lint` and confirm all domain tests green, no lint errors
+- [X] T038 Run `npm test && npm run lint` and confirm all domain tests green, no lint errors
 
 ---
 
