@@ -19,6 +19,7 @@
     activeStep: Step;
     allVariations: Record<Step, { sequences: Sequence[]; activeId: string | undefined }>;
     hasMovesToReset: boolean;
+    onApplyRotation: (axis: 'x' | 'y' | 'z') => void;
     onSetScramble: (s: string) => void;
     onGenerateScramble: () => Promise<void>;
     onAddMove: (notation: string) => void;
@@ -40,6 +41,7 @@
     activeStep,
     allVariations,
     hasMovesToReset,
+    onApplyRotation,
     onSetScramble,
     onGenerateScramble,
     onAddMove,
@@ -112,6 +114,7 @@
         onUndoMove={onUndoMove}
         onSaveSequence={onSaveSequence}
         onClearInput={onClearInput}
+        onApplyRotation={onApplyRotation}
       />
     {:else if mobileView === 'solution'}
       <SolutionView {solution} {stepByStep} />

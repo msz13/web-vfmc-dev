@@ -101,7 +101,7 @@ Feature: Selecting substeps
           | y  | drud | y   |
           | y  | drfb | y z |
           | x  | drfb | x   |
-          | x  | drrl | z z | 
+          | x  | drrl | x z | 
 
   
 

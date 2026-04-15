@@ -25,6 +25,7 @@
     onSelectVariation:  (step: Step, id: string) => store.selectVariation(step, id),
     onClearVariation:   (step: Step) => store.clearVariation(step),
     onResetToScramble:  () => store.resetToScramble(),
+    onApplyRotation:    (axis: 'x' | 'y' | 'z') => store.applyRotation(axis),
   });
 </script>
 

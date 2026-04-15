@@ -1,5 +1,6 @@
 import type { ID, Move, Sequence, SessionState, Step } from './types.js';
 import { STEP_ORDER } from './types.js';
+import { eoSubstepRotation, isEOSubstep } from './substeps.js';
 import { randomScrambleForEvent } from 'cubing/scramble';
 import { loadSession as persistenceLoad, saveSession as persistenceSave, clearSession as persistenceClear } from './persistence.js';
 
@@ -41,6 +42,8 @@ function emptyState(scramble: string): SessionState {
     activeStep: 'EO',
     currentInput: [],
     createdAt: now,
+    activeSubsteps: {},
+    manualRotations: [],
   };
 }
 
@@ -156,9 +159,23 @@ export class Session {
     return parts.filter((p) => p.trim() !== '').join(' ');
   }
 
+  applyRotation(axis: 'x' | 'y' | 'z'): void {
+    this.state.manualRotations.push(axis);
+  }
+
+  getCubeRotations(): string {
+    const activeSubstep = this.state.activeSubsteps[this.state.activeStep];
+    const canonical = activeSubstep && isEOSubstep(activeSubstep)
+      ? eoSubstepRotation(activeSubstep)
+      : '';
+    const parts = [canonical, ...this.state.manualRotations].filter((s) => s !== '');
+    return parts.join(' ');
+  }
+
   getCubeState(): string {
     const solution = this.getActiveSolution();
-    return [this.state.scramble, solution].filter((p) => p.trim() !== '').join(' ');
+    const rotations = this.getCubeRotations();
+    return [this.state.scramble, solution, rotations].filter((p) => p.trim() !== '').join(' ');
   }
 
   getScramble(): string {
@@ -194,7 +211,13 @@ export class Session {
 
   loadSession(): SessionState | null {
     const loaded = persistenceLoad();
-    if (loaded) this.state = loaded;
+    if (loaded) {
+      this.state = {
+        ...loaded,
+        activeSubsteps: loaded.activeSubsteps ?? {},
+        manualRotations: loaded.manualRotations ?? [],
+      };
+    }
     return loaded;
   }
 

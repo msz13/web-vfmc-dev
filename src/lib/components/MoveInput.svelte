@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Step } from '$lib/domain/types.js';
   import { STEP_DISPLAY, STEP_FULL_NAME } from '$lib/domain/types.js';
+  import CubeRotationControls from './CubeRotationControls.svelte';
 
   interface Props {
     step: Step;
@@ -9,9 +10,10 @@
     onUndoMove: () => void;
     onSaveSequence: () => void;
     onClearInput: () => void;
+    onApplyRotation: (axis: 'x' | 'y' | 'z') => void;
   }
 
-  let { step, currentInput, onAddMove, onUndoMove, onSaveSequence, onClearInput }: Props = $props();
+  let { step, currentInput, onAddMove, onUndoMove, onSaveSequence, onClearInput, onApplyRotation }: Props = $props();
 
   type KbState = 'IDLE' | 'PENDING';
   let kbState: KbState = $state('IDLE');
@@ -125,6 +127,9 @@
       </button>
     {/each}
   </div>
+
+  <!-- Rotation controls -->
+  <CubeRotationControls onRotate={onApplyRotation} />
 
   <!-- Actions -->
   <div class="move-actions">

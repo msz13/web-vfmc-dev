@@ -45,7 +45,7 @@
 | `y`                   | drud       | `y`            |
 | `y`                   | drfb       | `y z`          |
 | `x`                   | drfb       | `x`            |
-| `x`                   | drrl       | `z z`          |
+| `x`                   | drrl       | `x z`          |
 
 **Rationale**: DR orientation depends on where the D/U axis ends up after EO rotation:
 - `drud` (D/U at top/bottom): No additional rotation needed — whatever the EO rotation was, the D/U faces are preserved.

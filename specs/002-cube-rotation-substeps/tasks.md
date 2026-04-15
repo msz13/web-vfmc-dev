@@ -19,7 +19,7 @@
 
 **Purpose**: Extend shared type definitions that all user stories depend on.
 
-- [ ] T001 Extend `src/lib/domain/types.ts` with `EOSubstep`, `DRSubstep`, `Substep` union types, add `activeSubsteps` and `manualRotations` fields to `SessionState`, add optional `substep` field to `Sequence`
+- [X] T001 Extend `src/lib/domain/types.ts` with `EOSubstep`, `DRSubstep`, `Substep` union types, add `activeSubsteps` and `manualRotations` fields to `SessionState`, add optional `substep` field to `Sequence`
 
 **Checkpoint**: Types compile. Existing tests still pass (`npm test`).
 
@@ -31,8 +31,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T002 Write failing TDD tests for `eoSubstepRotation`, `isEOSubstep`, `isDRSubstep`, `isSubstep` in `src/lib/domain/substeps.test.ts`
-- [ ] T003 Create `src/lib/domain/substeps.ts` with `eoSubstepRotation` (lookup: eofb→"", eorl→"y", eoud→"x"), type guard functions — make T002 tests pass
+- [X] T002 Write failing TDD tests for `eoSubstepRotation`, `isEOSubstep`, `isDRSubstep`, `isSubstep` in `src/lib/domain/substeps.test.ts`
+- [X] T003 Create `src/lib/domain/substeps.ts` with `eoSubstepRotation` (lookup: eofb→"", eorl→"y", eoud→"x"), type guard functions — make T002 tests pass
 
 **Checkpoint**: `npm test` passes. `substeps.ts` has no Svelte or DOM imports.
 
@@ -46,20 +46,20 @@
 
 ### Domain TDD Tests (write first, confirm failing)
 
-- [ ] T004 Write failing tests for `applyRotation`, `getCubeRotations`, and modified `getCubeState` (with rotation suffix) in `src/lib/domain/session.test.ts` covering: single rotation appended, multiple rotations, getCubeState includes rotations after scramble + moves
+- [X] T004 Write failing tests for `applyRotation`, `getCubeRotations`, and modified `getCubeState` (with rotation suffix) in `src/lib/domain/session.test.ts` covering: single rotation appended, multiple rotations, getCubeState includes rotations after scramble + moves
 
 ### Domain Implementation
 
-- [ ] T005 [US1] Add `applyRotation(axis)` method to `Session` in `src/lib/domain/session.ts` — appends axis token to `state.manualRotations` — make T004 tests pass
-- [ ] T006 [US1] Add `getCubeRotations()` method to `Session` in `src/lib/domain/session.ts` — returns `manualRotations.join(' ')` (no substep canonical yet; that comes in US2)
-- [ ] T007 [US1] Modify `getCubeState()` in `src/lib/domain/session.ts` to append `getCubeRotations()` to scramble + solution string
+- [X] T005 [US1] Add `applyRotation(axis)` method to `Session` in `src/lib/domain/session.ts` — appends axis token to `state.manualRotations` — make T004 tests pass
+- [X] T006 [US1] Add `getCubeRotations()` method to `Session` in `src/lib/domain/session.ts` — returns `manualRotations.join(' ')` (no substep canonical yet; that comes in US2)
+- [X] T007 [US1] Modify `getCubeState()` in `src/lib/domain/session.ts` to append `getCubeRotations()` to scramble + solution string
 
 ### Store & UI
 
-- [ ] T008 [US1] Add `cubeRotations = $state('')` and `applyRotation(axis)` method to `SessionStore` in `src/lib/stores/session.svelte.ts`; update `#sync()` to set `cubeRotations` from `session.getCubeRotations()`
-- [ ] T009 [P] [US1] Create `src/lib/components/CubeRotationControls.svelte` — three buttons (x, y, z) with ≥ 44×44px touch targets; dispatches `rotate` event with axis value
-- [ ] T010 [US1] Integrate `CubeRotationControls` into `src/lib/components/MobileLayout.svelte` wired to `store.applyRotation`
-- [ ] T011 [US1] Integrate `CubeRotationControls` into `src/lib/components/DesktopLayout.svelte` wired to `store.applyRotation`
+- [X] T008 [US1] Add `cubeRotations = $state('')` and `applyRotation(axis)` method to `SessionStore` in `src/lib/stores/session.svelte.ts`; update `#sync()` to set `cubeRotations` from `session.getCubeRotations()`
+- [X] T009 [P] [US1] Create `src/lib/components/CubeRotationControls.svelte` — three buttons (x, y, z) with ≥ 44×44px touch targets; dispatches `rotate` event with axis value
+- [X] T010 [US1] Integrate `CubeRotationControls` into `src/lib/components/MobileLayout.svelte` wired to `store.applyRotation`
+- [X] T011 [US1] Integrate `CubeRotationControls` into `src/lib/components/DesktopLayout.svelte` wired to `store.applyRotation`
 
 **Checkpoint**: US1 fully functional. `npm test` passes. In-browser: applying x/y/z rotation updates TwistyPlayer display. Manual rotations persist as moves are added.
 

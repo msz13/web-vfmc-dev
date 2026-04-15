@@ -20,6 +20,7 @@ export class SessionStore {
 	cubeState = $state('');
 	stepByStep = $state('');
 	currentInput = $state('');
+	cubeRotations = $state('');
 	activeStep = $state<Step>('EO');
 	allVariations = $state<StepVariations>(emptyVariations());
 	hasMovesToReset = $derived(
@@ -40,6 +41,7 @@ export class SessionStore {
 		this.cubeState = this.#session.getCubeState();
 		this.stepByStep = this.#session.getActiveSolutionStepByStep();
 		this.currentInput = this.#session.getCurrentInput();
+		this.cubeRotations = this.#session.getCubeRotations();
 		const vars = {} as StepVariations;
 		for (const step of STEP_ORDER) {
 			vars[step] = {
@@ -112,6 +114,11 @@ export class SessionStore {
 	resetToScramble() {
 		this.#session.resetToScramble();
 		this.activeStep = 'EO';
+		this.#sync();
+	}
+
+	applyRotation(axis: 'x' | 'y' | 'z') {
+		this.#session.applyRotation(axis);
 		this.#sync();
 	}
 }

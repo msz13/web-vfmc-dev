@@ -428,6 +428,79 @@ describe('Session.resetToScramble', () => {
   });
 });
 
+describe('Session.applyRotation', () => {
+  it('appends a single rotation token to getCubeRotations', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.applyRotation('x');
+    expect(session.getCubeRotations()).toBe('x');
+  });
+
+  it('appends multiple rotation tokens in order', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.applyRotation('y');
+    session.applyRotation('z');
+    expect(session.getCubeRotations()).toBe('y z');
+  });
+
+  it('appends different axis combinations', () => {
+    const session = new Session();
+    session.setScramble('R');
+    session.applyRotation('x');
+    session.applyRotation('y');
+    session.applyRotation('x');
+    expect(session.getCubeRotations()).toBe('x y x');
+  });
+});
+
+describe('Session.getCubeRotations', () => {
+  it('returns empty string when no rotations applied', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    expect(session.getCubeRotations()).toBe('');
+  });
+
+  it('returns single rotation token', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.applyRotation('z');
+    expect(session.getCubeRotations()).toBe('z');
+  });
+});
+
+describe('Session.getCubeState with rotations', () => {
+  it('appends rotation tokens after scramble when no moves', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.applyRotation('x');
+    expect(session.getCubeState()).toBe('R U F x');
+  });
+
+  it('appends rotation tokens after scramble + moves — independent test', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    session.applyRotation('x');
+    session.addMove('B');
+    expect(session.getCubeState()).toBe('R U F B x');
+  });
+
+  it('does not append anything when no rotations applied', () => {
+    const session = new Session();
+    session.setScramble('R U F');
+    expect(session.getCubeState()).toBe('R U F');
+  });
+
+  it('appends multiple rotations after moves', () => {
+    const session = new Session();
+    session.setScramble('R');
+    session.addMove('U');
+    session.applyRotation('y');
+    session.applyRotation('z');
+    expect(session.getCubeState()).toBe('R U y z');
+  });
+});
+
 describe('Session.setActiveSolution', () => {
   it('updates the active sequence for a step', () => {
     const session = new Session();
