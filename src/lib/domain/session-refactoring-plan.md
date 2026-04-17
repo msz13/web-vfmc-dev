@@ -171,3 +171,15 @@ Add `scramble-manager.test.ts` and `solution-tree.test.ts`. The parentId chain w
 | `ScrambleManager` has no sequence dependencies | Scramble parsing/generation tests are trivial to write |
 | `Session` tests become integration tests | They verify coordination, not the constituent logic |
 | `SessionState` type unchanged | Serialization/persistence format stays identical |
+
+
+##My notes
+- 4 concerns, four classes:
+
+  substeps?
+  StepsVO//StepsService??
+
+- scrambleService - 
+- SequncesNotes- save sequence, get actice sequence, list sequnces
+- ActiveSolution - add move,
+- Persistance
