@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ParseError } from '$lib/domain/session.js';
+  import { ParseError } from '$lib/domain/attempt.js';
 
   interface Props {
     scramble: string;

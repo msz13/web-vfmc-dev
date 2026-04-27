@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { Sequence, Step } from '$lib/domain/types.js';
+  import type { StepSolution, Step } from '$lib/domain/types.js';
   import { STEP_DISPLAY } from '$lib/domain/types.js';
 
   interface StepVariations {
-    sequences: Sequence[];
+    sequences: StepSolution[];
     activeId: string | undefined;
   }
 

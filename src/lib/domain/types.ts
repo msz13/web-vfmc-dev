@@ -1,20 +1,14 @@
 export type ID = string; // UUID v4
 
-export type Step = 'EO' | 'DR' | 'HTR' | 'Floppy' | 'Finish';
-// Insertions deferred to feature 002
-
-export const STEP_ORDER: Step[] = ['EO', 'DR', 'HTR', 'Floppy', 'Finish'];
-
-export type EOSubstep = 'eofb' | 'eorl' | 'eoud';
-export type DRSubstep = 'drud' | 'drrl' | 'drfb';
-export type Substep = EOSubstep | DRSubstep;
+export type { Step, EOSubstep, DRSubstep, Substep } from './step.js';
+export { STEP_ORDER } from './step.js';
 
 export interface Move {
   notation: string; // e.g. "R", "U'", "F2"
   nissContext?: 'normal' | 'inverse'; // reserved for feature 002, always undefined here
 }
 
-export interface Sequence {
+export interface StepSolution {
   id: ID;
   stepName: Step;
   moves: Move[];
@@ -22,16 +16,20 @@ export interface Sequence {
   substep?: Substep; // substep active when this sequence was saved
 }
 
-export interface SessionState {
+export interface ActiveSolution {
+  currentStep: Step;
+  currentInput: Move[];
+  activeSubsteps: Partial<Record<Step, Substep>>;
+  activeStepSolutionIds: Partial<Record<Step, ID>>; // was: activeSequenceIds
+  manualRotations: string[];
+}
+
+export interface Attempt {
   id: ID;
+  createdAt: number;
   scramble: string;
-  sequences: Sequence[]; // all saved sequences, flat list
-  activeSequenceIds: Partial<Record<Step, ID>>; // selected sequence per step
-  activeStep: Step;
-  currentInput: Move[]; // unsaved moves being typed
-  createdAt: number; // Unix ms
-  activeSubsteps: Partial<Record<Step, Substep>>; // active substep per step
-  manualRotations: string[]; // user-applied rotation tokens (x/y/z)
+  savedStepSolutions: StepSolution[]; // was: sequences
+  activeSolution: ActiveSolution;
 }
 
 /** Alg string (scramble + moves) suitable for TwistyPlayer display */

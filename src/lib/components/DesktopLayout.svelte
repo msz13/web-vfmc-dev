@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Step, Sequence } from '$lib/domain/types.js';
+  import type { Step, StepSolution } from '$lib/domain/types.js';
   import ScrambleInput from './ScrambleInput.svelte';
   import CubeDisplay from './CubeDisplay.svelte';
   import MoveInput from './MoveInput.svelte';
@@ -15,7 +15,7 @@
     stepByStep: string;
     currentInput: string;
     activeStep: Step;
-    allVariations: Record<Step, { sequences: Sequence[]; activeId: string | undefined }>;
+    allVariations: Record<Step, { sequences: StepSolution[]; activeId: string | undefined }>;
     hasMovesToReset: boolean;
     activeSubstep: string | undefined;
     availableDRSubsteps: readonly string[];

@@ -1,34 +1,32 @@
 <script lang="ts">
-  import { SessionStore } from '$lib/stores/session.svelte.js';
+  import { attemptStore } from '$lib/stores/attempt.svelte.js';
   import type { Step, Substep } from '$lib/domain/types.js';
   import DesktopLayout from '$lib/components/DesktopLayout.svelte';
   import MobileLayout from '$lib/components/MobileLayout.svelte';
 
-  const store = new SessionStore();
-
   const sharedProps = $derived({
-    scramble:           store.scramble,
-    cubeState:          store.cubeState,
-    solution:           store.solution,
-    stepByStep:         store.stepByStep,
-    currentInput:       store.currentInput,
-    activeStep:         store.activeStep,
-    allVariations:      store.allVariations,
-    hasMovesToReset:    store.hasMovesToReset,
-    onSetScramble:      (s: string) => store.setScramble(s),
-    onGenerateScramble: () => store.generateScramble(),
-    onAddMove:          (n: string) => store.addMove(n),
-    onUndoMove:         () => store.undoMove(),
-    onSaveSequence:     () => store.saveSequence(),
-    onClearInput:       () => store.clearInput(),
-    onSelectStep:       (step: Step) => store.selectStep(step),
-    onSelectVariation:  (step: Step, id: string) => store.selectVariation(step, id),
-    onClearVariation:   (step: Step) => store.clearVariation(step),
-    onResetToScramble:  () => store.resetToScramble(),
-    onApplyRotation:    (axis: 'x' | 'y' | 'z') => store.applyRotation(axis),
-    activeSubstep:         store.activeSubstep,
-    availableDRSubsteps:   store.availableDRSubsteps,
-    onSelectSubstep:       (s: string) => store.selectSubstep(s as Substep),
+    scramble:           attemptStore.scramble,
+    cubeState:          attemptStore.cubeState,
+    solution:           attemptStore.solution,
+    stepByStep:         attemptStore.solutionMultiline,
+    currentInput:       attemptStore.currentInput,
+    activeStep:         attemptStore.activeStep,
+    allVariations:      attemptStore.allVariations,
+    hasMovesToReset:    attemptStore.hasMovesToReset,
+    onSetScramble:      (s: string) => attemptStore.setScramble(s),
+    onGenerateScramble: () => attemptStore.generateScramble(),
+    onAddMove:          (n: string) => attemptStore.addMove(n),
+    onUndoMove:         () => attemptStore.undoMove(),
+    onSaveSequence:     () => attemptStore.saveSequence(),
+    onClearInput:       () => attemptStore.clearInput(),
+    onSelectStep:       (step: Step) => attemptStore.selectStep(step),
+    onSelectVariation:  (step: Step, id: string) => attemptStore.selectVariation(step, id),
+    onClearVariation:   (step: Step) => attemptStore.clearVariation(step),
+    onResetToScramble:  () => attemptStore.resetToScramble(),
+    onApplyRotation:    (axis: 'x' | 'y' | 'z') => attemptStore.applyRotation(axis),
+    activeSubstep:         attemptStore.activeSubstep,
+    availableDRSubsteps:   attemptStore.availableDRSubsteps,
+    onSelectSubstep:       (s: string) => attemptStore.selectSubstep(s as Substep),
   });
 </script>
 

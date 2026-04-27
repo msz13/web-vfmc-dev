@@ -1,10 +1,10 @@
 <script lang="ts">
   import { STEP_ORDER, STEP_DISPLAY } from '$lib/domain/types.js';
-  import type { Step, Sequence } from '$lib/domain/types.js';
+  import type { Step, StepSolution } from '$lib/domain/types.js';
 
   interface Props {
     activeStep: Step;
-    allVariations: Record<Step, { sequences: Sequence[]; activeId: string | undefined }>;
+    allVariations: Record<Step, { sequences: StepSolution[]; activeId: string | undefined }>;
     showReset: boolean;
     onSelectStep: (step: Step) => void;
     onResetToScramble: () => void;
