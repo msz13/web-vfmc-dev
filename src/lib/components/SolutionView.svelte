@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { STEP_DISPLAY } from '$lib/domain/types.js';
   import type { Step } from '$lib/domain/types.js';
+  import { STEP_DISPLAY } from '$lib/domain/step.js';
 
   interface Props {
     solution: string;

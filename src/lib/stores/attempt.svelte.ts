@@ -2,7 +2,8 @@ import * as domain from '$lib/domain/attempt.js';
 import type { StepVariations } from '$lib/domain/attempt.js';
 import { loadAttempt, saveAttempt } from '$lib/domain/attempt-persistence.js';
 import { prevStep } from '$lib/domain/step.js';
-import type { Attempt, Step, Substep } from '$lib/domain/types.js';
+import type { Attempt } from '$lib/domain/attempt.js';
+import type { Step, Substep } from '$lib/domain/types.js';
 
 class AttemptStore {
 	#attempt = $state<Attempt>(domain.createAttempt(''));

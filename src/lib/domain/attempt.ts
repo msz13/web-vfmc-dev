@@ -1,6 +1,30 @@
-import type { ID, Move, StepSolution, Attempt, ActiveSolution, Step } from './types.js';
+import type { ID, Move, Alg, Step } from './types.js';
 import { STEP_ORDER } from './types.js';
 import type { Substep, DRSubstep } from './types.js';
+
+export interface StepSolution {
+  id: ID;
+  stepName: Step;
+  moves: Alg;
+  previousStepID: ID | null; // null for EO sequences
+  substep?: Substep; // substep active when this sequence was saved
+}
+
+export interface ActiveSolution {
+  currentStep: Step;
+  currentInput: Move[];
+  activeSubsteps: Partial<Record<Step, Substep>>;
+  activeStepSolutionIds: Partial<Record<Step, ID>>;
+  manualRotations: string[];
+}
+
+export interface Attempt {
+  id: ID;
+  createdAt: number;
+  scramble: string;
+  savedStepSolutions: StepSolution[];
+  activeSolution: ActiveSolution;
+}
 import { defaultSubstepFor, canonicalRotation, isEOSubstep, isDRSubstep, validSubstepsFor } from './step.js';
 
 export type StepVariations = Record<Step, { sequences: StepSolution[]; activeId: string | undefined }>;
@@ -25,11 +49,11 @@ function parseMove(notation: string): Move {
   if (!MOVE_REGEX.test(notation)) {
     throw new ParseError(`Invalid move notation: "${notation}"`);
   }
-  return { notation };
+  return notation as Move;
 }
 
 function formatMoves(moves: Move[]): string {
-  return moves.map((m) => m.notation).join(' ');
+  return moves.join(' ');
 }
 
 export function emptyActiveSolution(): ActiveSolution {
@@ -134,7 +158,7 @@ export function setActiveStep(attempt: Attempt, step: Step): Attempt {
 export function saveStepSolution(attempt: Attempt): Attempt {
   const step = attempt.activeSolution.currentStep;
   const idx = STEP_ORDER.indexOf(step);
-  const parentId =
+  const previousStepID =
     idx === 0
       ? null
       : (attempt.activeSolution.activeStepSolutionIds[STEP_ORDER[idx - 1]] ?? null);
@@ -142,8 +166,8 @@ export function saveStepSolution(attempt: Attempt): Attempt {
   const seq: StepSolution = {
     id: crypto.randomUUID(),
     stepName: step,
-    moves: [...attempt.activeSolution.currentInput],
-    parentId,
+    moves: { normalMoves: [...attempt.activeSolution.currentInput], inverseMoves: [] },
+    previousStepID,
     substep: attempt.activeSolution.activeSubsteps[step],
   };
 
@@ -167,11 +191,11 @@ export function selectStepSolution(attempt: Attempt, step: Step, sequenceId: ID)
 
   newIds[step] = sequenceId;
 
-  // Walk up parentId chain to activate ancestor steps
+  // Walk up previousStepID chain to activate ancestor steps
   let current = attempt.savedStepSolutions.find((s) => s.id === sequenceId);
-  for (let i = idx - 1; i >= 0 && current?.parentId; i--) {
-    newIds[STEP_ORDER[i]] = current.parentId;
-    current = attempt.savedStepSolutions.find((s) => s.id === current!.parentId);
+  for (let i = idx - 1; i >= 0 && current?.previousStepID; i--) {
+    newIds[STEP_ORDER[i]] = current.previousStepID;
+    current = attempt.savedStepSolutions.find((s) => s.id === current!.previousStepID);
   }
 
   // Invalidate all subsequent steps
@@ -229,7 +253,7 @@ export function getActiveSolution(attempt: Attempt): string {
     const seqId = attempt.activeSolution.activeStepSolutionIds[step];
     if (!seqId) break;
     const seq = attempt.savedStepSolutions.find((s) => s.id === seqId);
-    if (seq) parts.push(formatMoves(seq.moves));
+    if (seq) parts.push(formatMoves([...seq.moves.normalMoves, ...seq.moves.inverseMoves]));
   }
   if (attempt.activeSolution.currentInput.length > 0) {
     parts.push(formatMoves(attempt.activeSolution.currentInput));
@@ -246,9 +270,9 @@ export function getSolutionMultiline(attempt: Attempt): string {
     if (!seqId) break;
     const seq = attempt.savedStepSolutions.find((s) => s.id === seqId);
     if (!seq) break;
-    const count = seq.moves.length;
+    const count = seq.moves.normalMoves.length + seq.moves.inverseMoves.length;
     runningTotal += count;
-    lines.push(`${formatMoves(seq.moves)} // ${step} (${count}/${runningTotal})`);
+    lines.push(`${formatMoves([...seq.moves.normalMoves, ...seq.moves.inverseMoves])} // ${step} (${count}/${runningTotal})`);
   }
 
   const activeStep = attempt.activeSolution.currentStep;

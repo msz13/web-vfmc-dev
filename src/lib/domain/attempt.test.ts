@@ -319,18 +319,18 @@ describe('saveStepSolution', () => {
     attempt = saveStepSolution(attempt);
     const variations = getStepVariations(attempt, 'EO');
     expect(variations).toHaveLength(1);
-    expect(variations[0].moves.map((m) => m.notation)).toEqual(['U', 'F']);
+    expect(variations[0].moves.normalMoves).toEqual(['U', 'F']);
   });
 
-  it('sets parentId to null for EO step solutions', () => {
+  it('sets previousStepID to null for EO step solutions', () => {
     let attempt = setScramble('R');
     attempt = addMove(attempt, 'U');
     attempt = saveStepSolution(attempt);
     const variations = getStepVariations(attempt, 'EO');
-    expect(variations[0].parentId).toBeNull();
+    expect(variations[0].previousStepID).toBeNull();
   });
 
-  it('sets parentId to active EO step solution id for DR step solutions', () => {
+  it('sets previousStepID to active EO step solution id for DR step solutions', () => {
     let attempt = setScramble('R');
     attempt = addMove(attempt, 'U');
     attempt = saveStepSolution(attempt); // EO
@@ -340,7 +340,7 @@ describe('saveStepSolution', () => {
     attempt = addMove(attempt, 'F');
     attempt = saveStepSolution(attempt); // DR
     const [drSeq] = getStepVariations(attempt, 'DR');
-    expect(drSeq.parentId).toBe(eoSeq.id);
+    expect(drSeq.previousStepID).toBe(eoSeq.id);
   });
 
   it('clears currentInput after saving', () => {
@@ -357,7 +357,7 @@ describe('saveStepSolution', () => {
     attempt = saveStepSolution(attempt); // save empty EO
     const variations = getStepVariations(attempt, 'EO');
     expect(variations).toHaveLength(1);
-    expect(variations[0].moves).toHaveLength(0);
+    expect(variations[0].moves.normalMoves).toHaveLength(0);
   });
 });
 

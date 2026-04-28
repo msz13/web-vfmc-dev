@@ -1,6 +1,7 @@
 <script lang="ts">
-  import type { StepSolution, Step } from '$lib/domain/types.js';
-  import { STEP_DISPLAY } from '$lib/domain/types.js';
+  import type { Step } from '$lib/domain/types.js';
+  import { STEP_DISPLAY } from '$lib/domain/step.js';
+  import type { StepSolution } from '$lib/domain/attempt.js';
 
   interface StepVariations {
     sequences: StepSolution[];
@@ -48,7 +49,7 @@
             {/if}
             {#each sequences as seq, i (seq.id)}
               <option value={seq.id}>
-                {seq.id === activeId ? '▸' : '\u00a0'} #{i + 1}  {seq.moves.map((m) => m.notation).join(' ') || '(empty)'}  ({seq.moves.length})
+                {seq.id === activeId ? '▸' : '\u00a0'} #{i + 1}  {[...seq.moves.normalMoves, ...seq.moves.inverseMoves].join(' ') || '(empty)'}  ({seq.moves.normalMoves.length + seq.moves.inverseMoves.length})
               </option>
             {/each}
           </select>

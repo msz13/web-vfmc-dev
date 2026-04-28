@@ -92,3 +92,15 @@ export function isDRSubstep(s: string): s is DRSubstep {
 export function isSubstep(s: string): s is Substep {
   return isEOSubstep(s) || isDRSubstep(s);
 }
+
+export const STEP_DISPLAY: Record<Step, string> = {
+  EO: 'EO', DR: 'DR', HTR: 'HTR', Floppy: 'FR', Finish: 'Finish'
+};
+
+export const STEP_FULL_NAME: Record<Step, string> = {
+  EO: 'Edge Orientation',
+  DR: 'Domino Reduction',
+  HTR: 'Half Turn Reduction',
+  Floppy: 'Floppy Reduction',
+  Finish: 'Finish'
+};

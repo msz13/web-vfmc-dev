@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { STEP_ORDER, STEP_DISPLAY } from '$lib/domain/types.js';
-  import type { Step, StepSolution } from '$lib/domain/types.js';
+  import { STEP_ORDER } from '$lib/domain/types.js';
+  import { STEP_DISPLAY } from '$lib/domain/step.js';
+  import type { Step } from '$lib/domain/types.js';
+  import type { StepSolution } from '$lib/domain/attempt.js';
 
   interface Props {
     activeStep: Step;

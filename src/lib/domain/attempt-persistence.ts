@@ -1,7 +1,39 @@
-import type { ID, Move, StepSolution, Attempt, Step } from './types.js';
+import type { ID, Move, Alg, Step } from './types.js';
 import type { Substep } from './types.js';
+import type { StepSolution, Attempt } from './attempt.js';
 
 const STORAGE_KEY = 'vfmc_attempt_v1';
+
+function migrateMove(m: unknown): Move {
+  if (typeof m === 'string') return m as Move;
+  return (m as { notation: string }).notation as Move;
+}
+
+function migrateMoveArray(arr: unknown[]): Move[] {
+  return arr.map(migrateMove);
+}
+
+function migrateSolution(s: unknown): StepSolution {
+  const raw = s as Record<string, unknown>;
+  const rawMoves = raw['moves'];
+  let moves: Alg;
+  if (Array.isArray(rawMoves)) {
+    moves = { normalMoves: migrateMoveArray(rawMoves), inverseMoves: [] };
+  } else {
+    const algRaw = rawMoves as { normalMoves: unknown[]; inverseMoves: unknown[] };
+    moves = {
+      normalMoves: migrateMoveArray(algRaw.normalMoves),
+      inverseMoves: migrateMoveArray(algRaw.inverseMoves),
+    };
+  }
+  return {
+    id: raw['id'] as ID,
+    stepName: raw['stepName'] as Step,
+    moves,
+    previousStepID: (raw['previousStepID'] ?? raw['parentId'] ?? null) as ID | null,
+    substep: raw['substep'] as Substep | undefined,
+  };
+}
 const LEGACY_KEY = 'vfmc_session_v1';
 
 export function loadAttempt(): Attempt | null {
@@ -15,6 +47,7 @@ export function loadAttempt(): Attempt | null {
       const loaded = parsed as unknown as Attempt;
       return {
         ...loaded,
+        savedStepSolutions: loaded.savedStepSolutions.map(migrateSolution),
         activeSolution: {
           ...loaded.activeSolution,
           activeSubsteps: loaded.activeSolution.activeSubsteps ?? {},
@@ -31,7 +64,7 @@ export function loadAttempt(): Attempt | null {
       savedStepSolutions: (parsed['sequences'] as StepSolution[]) ?? [],
       activeSolution: {
         currentStep: (parsed['activeStep'] as Step) ?? 'EO',
-        currentInput: (parsed['currentInput'] as Move[]) ?? [],
+        currentInput: migrateMoveArray((parsed['currentInput'] as unknown[]) ?? []),
         activeSubsteps: (parsed['activeSubsteps'] as Partial<Record<Step, Substep>>) ?? {},
         activeStepSolutionIds: (parsed['activeSequenceIds'] as Partial<Record<Step, ID>>) ?? {},
         manualRotations: (parsed['manualRotations'] as string[]) ?? [],

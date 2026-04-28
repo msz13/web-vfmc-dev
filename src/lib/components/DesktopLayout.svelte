@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Step, StepSolution } from '$lib/domain/types.js';
+  import type { Step } from '$lib/domain/types.js';
+  import type { StepSolution } from '$lib/domain/attempt.js';
   import ScrambleInput from './ScrambleInput.svelte';
   import CubeDisplay from './CubeDisplay.svelte';
   import MoveInput from './MoveInput.svelte';

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Step } from '$lib/domain/types.js';
-  import { STEP_DISPLAY, STEP_FULL_NAME } from '$lib/domain/types.js';
+  import { STEP_DISPLAY, STEP_FULL_NAME } from '$lib/domain/step.js';
   import CubeRotationControls from './CubeRotationControls.svelte';
   import SubstepSelector from './SubstepSelector.svelte';
 
