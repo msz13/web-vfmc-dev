@@ -3,13 +3,15 @@ export type ID = string; // UUID v4
 export type { Step, EOSubstep, DRSubstep, Substep } from './step.js';
 export { STEP_ORDER } from './step.js';
 
-export type Move =
-  | 'R' | "R'" | 'R2'
-  | 'L' | "L'" | 'L2'
-  | 'U' | "U'" | 'U2'
-  | 'D' | "D'" | 'D2'
-  | 'F' | "F'" | 'F2'
-  | 'B' | "B'" | 'B2';
+export const MOVES = [
+  'R',  'U',  'F',  'L',  'D',  'B',
+  "R'", "U'", "F'", "L'", "D'", "B'",
+  'R2', 'U2', 'F2', 'L2', 'D2', 'B2',
+] as const;
+
+export type Move = typeof MOVES[number];
+
+
 
 export interface Alg {
   normalMoves: Move[];

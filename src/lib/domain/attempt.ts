@@ -88,6 +88,7 @@ export async function generateScramble(): Promise<Attempt> {
   return createAttempt(alg.toString());
 }
 
+//Refactor: return ActiveSolution
 export function addMove(attempt: Attempt, notation: string): Attempt {
   const parsed = parseMove(notation);
   return {
@@ -99,6 +100,7 @@ export function addMove(attempt: Attempt, notation: string): Attempt {
   };
 }
 
+//Refactor: return ActiveSolution
 export function undoMove(attempt: Attempt): Attempt {
   if (attempt.activeSolution.currentInput.length === 0) return attempt;
   return {
@@ -110,6 +112,7 @@ export function undoMove(attempt: Attempt): Attempt {
   };
 }
 
+//Refactor: return ActiveSolution
 export function clearInput(attempt: Attempt): Attempt {
   return {
     ...attempt,
@@ -120,6 +123,7 @@ export function clearInput(attempt: Attempt): Attempt {
   };
 }
 
+//Refactor: return ActiveSolution
 export function setSubstep(attempt: Attempt, substep: Substep): Attempt {
   return {
     ...attempt,
@@ -134,6 +138,7 @@ export function setSubstep(attempt: Attempt, substep: Substep): Attempt {
   };
 }
 
+//Refactor: return ActiveSolution
 export function setActiveStep(attempt: Attempt, step: Step): Attempt {
   let updated: Attempt = {
     ...attempt,
@@ -154,6 +159,7 @@ export function setActiveStep(attempt: Attempt, step: Step): Attempt {
 
   return updated;
 }
+
 
 export function saveStepSolution(attempt: Attempt): Attempt {
   const step = attempt.activeSolution.currentStep;
@@ -185,6 +191,7 @@ export function saveStepSolution(attempt: Attempt): Attempt {
   };
 }
 
+//Refactor: return ActiveSolution
 export function selectStepSolution(attempt: Attempt, step: Step, sequenceId: ID): Attempt {
   const idx = STEP_ORDER.indexOf(step);
   const newIds: Partial<Record<Step, ID>> = { ...attempt.activeSolution.activeStepSolutionIds };
@@ -224,6 +231,7 @@ export function selectStepSolution(attempt: Attempt, step: Step, sequenceId: ID)
   };
 }
 
+//Refactor: return ActiveSolution
 export function resetToScramble(attempt: Attempt): Attempt {
   if (!attempt.scramble) return attempt;
   return {
@@ -237,6 +245,7 @@ export function resetToScramble(attempt: Attempt): Attempt {
   };
 }
 
+//TO DECIDE: return ActiveSolution czy tylko cube state
 export function applyRotation(attempt: Attempt, axis: 'x' | 'y' | 'z'): Attempt {
   return {
     ...attempt,
@@ -246,6 +255,7 @@ export function applyRotation(attempt: Attempt, axis: 'x' | 'y' | 'z'): Attempt 
     },
   };
 }
+
 
 export function getActiveSolution(attempt: Attempt): string {
   const parts: string[] = [];
@@ -320,6 +330,7 @@ export function getActiveSequenceId(attempt: Attempt, step: Step): string | unde
   return attempt.activeSolution.activeStepSolutionIds[step];
 }
 
+//RENAME function name getALLStepsSolutions and StepVariations to StepSolutions 
 export function getAllVariations(attempt: Attempt): StepVariations {
   const vars = {} as StepVariations;
   for (const step of STEP_ORDER) {

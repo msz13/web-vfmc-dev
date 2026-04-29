@@ -19,12 +19,14 @@ function migrateSolution(s: unknown): StepSolution {
   let moves: Alg;
   if (Array.isArray(rawMoves)) {
     moves = { normalMoves: migrateMoveArray(rawMoves), inverseMoves: [] };
-  } else {
+  } else if (rawMoves && typeof rawMoves === 'object') {
     const algRaw = rawMoves as { normalMoves: unknown[]; inverseMoves: unknown[] };
     moves = {
-      normalMoves: migrateMoveArray(algRaw.normalMoves),
-      inverseMoves: migrateMoveArray(algRaw.inverseMoves),
+      normalMoves: migrateMoveArray(algRaw.normalMoves ?? []),
+      inverseMoves: migrateMoveArray(algRaw.inverseMoves ?? []),
     };
+  } else {
+    moves = { normalMoves: [], inverseMoves: [] };
   }
   return {
     id: raw['id'] as ID,
@@ -61,7 +63,7 @@ export function loadAttempt(): Attempt | null {
       id: parsed['id'] as string,
       createdAt: parsed['createdAt'] as number,
       scramble: parsed['scramble'] as string,
-      savedStepSolutions: (parsed['sequences'] as StepSolution[]) ?? [],
+      savedStepSolutions: ((parsed['sequences'] as unknown[]) ?? []).map(migrateSolution),
       activeSolution: {
         currentStep: (parsed['activeStep'] as Step) ?? 'EO',
         currentInput: migrateMoveArray((parsed['currentInput'] as unknown[]) ?? []),
