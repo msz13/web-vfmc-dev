@@ -1,98 +1,31 @@
 <script lang="ts">
-  import type { Step } from '$lib/domain/types.js';
-  import type { StepSolution } from '$lib/domain/attempt.js';
-  import ScrambleInput from './ScrambleInput.svelte';
-  import CubeDisplay from './CubeDisplay.svelte';
-  import MoveInput from './MoveInput.svelte';
-  import SolutionView from './SolutionView.svelte';
-  import VariationList from './VariationList.svelte';
-  import StepTabsRow from './StepTabsRow.svelte';
-  import { STEP_ORDER } from '$lib/domain/types.js';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     scramble: string;
-    cubeState: string;
-    solution: string;
-    stepByStep: string;
-    currentInput: string;
-    activeStep: Step;
-    allVariations: Record<Step, { sequences: StepSolution[]; activeId: string | undefined }>;
-    hasMovesToReset: boolean;
-    activeSubstep: string | undefined;
-    availableDRSubsteps: readonly string[];
-    onApplyRotation: (axis: 'x' | 'y' | 'z') => void;
-    onSelectSubstep: (substep: string) => void;
-    onSetScramble: (s: string) => void;
-    onGenerateScramble: () => Promise<void>;
-    onAddMove: (notation: string) => void;
-    onUndoMove: () => void;
-    onSaveSequence: () => void;
-    onClearInput: () => void;
-    onSelectStep: (step: Step) => void;
-    onSelectVariation: (step: Step, sequenceId: string) => void;
-    onClearVariation: (step: Step) => void;
-    onResetToScramble: () => void;
+    scrambleinput: Snippet;
+    cube: Snippet;
+    steptabs: Snippet;
+    moveinput: Snippet;
+    solution: Snippet;
+    variations: Snippet;
   }
 
-  const {
-    scramble,
-    cubeState,
-    solution,
-    stepByStep,
-    currentInput,
-    activeStep,
-    allVariations,
-    hasMovesToReset,
-    activeSubstep,
-    availableDRSubsteps,
-    onApplyRotation,
-    onSelectSubstep,
-    onSetScramble,
-    onGenerateScramble,
-    onAddMove,
-    onUndoMove,
-    onSaveSequence,
-    onClearInput,
-    onSelectStep,
-    onSelectVariation,
-    onClearVariation,
-    onResetToScramble,
-  }: Props = $props();
+  const { scramble, scrambleinput, cube, steptabs, moveinput, solution, variations }: Props = $props();
 </script>
 
 <div class="desktop">
-  <ScrambleInput
-    {scramble}
-    onSetScramble={onSetScramble}
-    onGenerateScramble={onGenerateScramble}
-  />
+  {@render scrambleinput()}
 
   <div class="desktop-top">
     <div class="cube-viewport">
-      <CubeDisplay alg={cubeState} />
+      {@render cube()}
     </div>
 
     <div class="col">
       {#if scramble}
-        <StepTabsRow
-          {activeStep}
-          {allVariations}
-          showReset={hasMovesToReset}
-          {onSelectStep}
-          {onResetToScramble}
-        />
-        <MoveInput
-          step={activeStep}
-          {currentInput}
-          {activeSubstep}
-          {availableDRSubsteps}
-          onAddMove={onAddMove}
-          onUndoMove={onUndoMove}
-          onSaveSequence={onSaveSequence}
-          onClearInput={onClearInput}
-          onApplyRotation={onApplyRotation}
-          onSelectSubstep={onSelectSubstep}
-        />
+        {@render steptabs()}
+        {@render moveinput()}
       {:else}
         <div class="empty-state">Enter a scramble to begin.</div>
       {/if}
@@ -101,13 +34,8 @@
 
   {#if scramble}
     <div class="desktop-bottom">
-      <SolutionView {solution} {stepByStep} />
-      <VariationList
-        steps={STEP_ORDER}
-        variations={allVariations}
-        onSelectVariation={onSelectVariation}
-        onClearVariation={onClearVariation}
-      />
+      {@render solution()}
+      {@render variations()}
     </div>
   {/if}
 </div>

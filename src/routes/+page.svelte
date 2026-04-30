@@ -1,33 +1,15 @@
 <script lang="ts">
   import { attemptStore } from '$lib/stores/attempt.svelte.js';
-  import type { Step, Substep } from '$lib/domain/types.js';
+  import type { Substep } from '$lib/domain/types.js';
+  import { STEP_ORDER } from '$lib/domain/types.js';
   import DesktopLayout from '$lib/components/DesktopLayout.svelte';
   import MobileLayout from '$lib/components/MobileLayout.svelte';
-
-  const sharedProps = $derived({
-    scramble:           attemptStore.scramble,
-    cubeState:          attemptStore.cubeState,
-    solution:           attemptStore.solution,
-    stepByStep:         attemptStore.solutionMultiline,
-    currentInput:       attemptStore.currentInput,
-    activeStep:         attemptStore.activeStep,
-    allVariations:      attemptStore.allVariations,
-    hasMovesToReset:    attemptStore.hasMovesToReset,
-    onSetScramble:      (s: string) => attemptStore.setScramble(s),
-    onGenerateScramble: () => attemptStore.generateScramble(),
-    onAddMove:          (n: string) => attemptStore.addMove(n),
-    onUndoMove:         () => attemptStore.undoMove(),
-    onSaveSequence:     () => attemptStore.saveSequence(),
-    onClearInput:       () => attemptStore.clearInput(),
-    onSelectStep:       (step: Step) => attemptStore.selectStep(step),
-    onSelectVariation:  (step: Step, id: string) => attemptStore.selectVariation(step, id),
-    onClearVariation:   (step: Step) => attemptStore.clearVariation(step),
-    onResetToScramble:  () => attemptStore.resetToScramble(),
-    onApplyRotation:    (axis: 'x' | 'y' | 'z') => attemptStore.applyRotation(axis),
-    activeSubstep:         attemptStore.activeSubstep,
-    availableDRSubsteps:   attemptStore.availableDRSubsteps,
-    onSelectSubstep:       (s: string) => attemptStore.selectSubstep(s as Substep),
-  });
+  import ScrambleInput from '$lib/components/ScrambleInput.svelte';
+  import CubeDisplay from '$lib/components/CubeDisplay.svelte';
+  import StepTabsRow from '$lib/components/StepTabsRow.svelte';
+  import MoveInput from '$lib/components/MoveInput.svelte';
+  import SolutionView from '$lib/components/SolutionView.svelte';
+  import VariationList from '$lib/components/VariationList.svelte';
 </script>
 
 <main class="app">
@@ -36,8 +18,97 @@
     <span class="app-subtitle">Solution Builder</span>
   </header>
 
-  <DesktopLayout {...sharedProps} />
-  <MobileLayout {...sharedProps} />
+  <DesktopLayout scramble={attemptStore.scramble}>
+    {#snippet scrambleinput()}
+      <ScrambleInput
+        scramble={attemptStore.scramble}
+        onSetScramble={(s) => attemptStore.setScramble(s)}
+        onGenerateScramble={() => attemptStore.generateScramble()}
+      />
+    {/snippet}
+    {#snippet cube()}
+      <CubeDisplay alg={attemptStore.cubeState} />
+    {/snippet}
+    {#snippet steptabs()}
+      <StepTabsRow
+        activeStep={attemptStore.activeStep}
+        allVariations={attemptStore.allVariations}
+        showReset={attemptStore.hasMovesToReset}
+        onSelectStep={(step) => attemptStore.selectStep(step)}
+        onResetToScramble={() => attemptStore.resetToScramble()}
+      />
+    {/snippet}
+    {#snippet moveinput()}
+      <MoveInput
+        step={attemptStore.activeStep}
+        currentInput={attemptStore.currentInput}
+        activeSubstep={attemptStore.activeSubstep}
+        availableDRSubsteps={attemptStore.availableDRSubsteps}
+        onAddMove={(n) => attemptStore.addMove(n)}
+        onUndoMove={() => attemptStore.undoMove()}
+        onSaveSequence={() => attemptStore.saveSequence()}
+        onClearInput={() => attemptStore.clearInput()}
+        onApplyRotation={(axis) => attemptStore.applyRotation(axis)}
+        onSelectSubstep={(s) => attemptStore.selectSubstep(s as Substep)}
+      />
+    {/snippet}
+    {#snippet solution()}
+      <SolutionView solution={attemptStore.solution} stepByStep={attemptStore.solutionMultiline} />
+    {/snippet}
+    {#snippet variations()}
+      <VariationList
+        steps={STEP_ORDER}
+        variations={attemptStore.allVariations}
+        onSelectVariation={(step, id) => attemptStore.selectVariation(step, id)}
+        onClearVariation={(step) => attemptStore.clearVariation(step)}
+      />
+    {/snippet}
+  </DesktopLayout>
+
+  <MobileLayout scramble={attemptStore.scramble}>
+    {#snippet scrambleinput()}
+      <ScrambleInput
+        scramble={attemptStore.scramble}
+        onSetScramble={(s) => attemptStore.setScramble(s)}
+        onGenerateScramble={() => attemptStore.generateScramble()}
+      />
+    {/snippet}
+    {#snippet cube()}
+      <CubeDisplay alg={attemptStore.cubeState} />
+    {/snippet}
+    {#snippet inputview()}
+      <StepTabsRow
+        activeStep={attemptStore.activeStep}
+        allVariations={attemptStore.allVariations}
+        showReset={attemptStore.hasMovesToReset}
+        onSelectStep={(step) => attemptStore.selectStep(step)}
+        onResetToScramble={() => attemptStore.resetToScramble()}
+      />
+      <MoveInput
+        step={attemptStore.activeStep}
+        currentInput={attemptStore.currentInput}
+        activeSubstep={attemptStore.activeSubstep}
+        availableDRSubsteps={attemptStore.availableDRSubsteps}
+        onAddMove={(n) => attemptStore.addMove(n)}
+        onUndoMove={() => attemptStore.undoMove()}
+        onSaveSequence={() => attemptStore.saveSequence()}
+        onClearInput={() => attemptStore.clearInput()}
+        onApplyRotation={(axis) => attemptStore.applyRotation(axis)}
+        onSelectSubstep={(s) => attemptStore.selectSubstep(s as Substep)}
+      />
+    {/snippet}
+    {#snippet solutionview()}
+      <SolutionView solution={attemptStore.solution} stepByStep={attemptStore.solutionMultiline} />
+    {/snippet}
+    {#snippet variationsview()}
+      <VariationList
+        steps={STEP_ORDER}
+        variations={attemptStore.allVariations}
+        onSelectVariation={(step, id) => attemptStore.selectVariation(step, id)}
+        onClearVariation={(step) => attemptStore.clearVariation(step)}
+      />
+    {/snippet}
+  </MobileLayout>
 </main>
 
 <style>
@@ -71,5 +142,4 @@
     font-size: 13px;
     color: var(--text-dim);
   }
-
 </style>
