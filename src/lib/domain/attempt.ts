@@ -56,6 +56,10 @@ function formatMoves(moves: Move[]): string {
   return moves.join(' ');
 }
 
+function patchActiveSolution(attempt: Attempt, patch: Partial<ActiveSolution>): Attempt {
+  return { ...attempt, activeSolution: { ...attempt.activeSolution, ...patch } };
+}
+
 export function emptyActiveSolution(): ActiveSolution {
   return {
     currentStep: 'EO',
@@ -88,68 +92,36 @@ export async function generateScramble(): Promise<Attempt> {
   return createAttempt(alg.toString());
 }
 
-//Refactor: return ActiveSolution
 export function addMove(attempt: Attempt, notation: string): Attempt {
-  const parsed = parseMove(notation);
-  return {
-    ...attempt,
-    activeSolution: {
-      ...attempt.activeSolution,
-      currentInput: [...attempt.activeSolution.currentInput, parsed],
-    },
-  };
+  return patchActiveSolution(attempt, {
+    currentInput: [...attempt.activeSolution.currentInput, parseMove(notation)],
+  });
 }
 
-//Refactor: return ActiveSolution
 export function undoMove(attempt: Attempt): Attempt {
   if (attempt.activeSolution.currentInput.length === 0) return attempt;
-  return {
-    ...attempt,
-    activeSolution: {
-      ...attempt.activeSolution,
-      currentInput: attempt.activeSolution.currentInput.slice(0, -1),
-    },
-  };
+  return patchActiveSolution(attempt, {
+    currentInput: attempt.activeSolution.currentInput.slice(0, -1),
+  });
 }
 
-//Refactor: return ActiveSolution
 export function clearInput(attempt: Attempt): Attempt {
-  return {
-    ...attempt,
-    activeSolution: {
-      ...attempt.activeSolution,
-      currentInput: [],
-    },
-  };
+  return patchActiveSolution(attempt, { currentInput: [] });
 }
 
-//Refactor: return ActiveSolution
 export function setSubstep(attempt: Attempt, substep: Substep): Attempt {
-  return {
-    ...attempt,
-    activeSolution: {
-      ...attempt.activeSolution,
-      activeSubsteps: {
-        ...attempt.activeSolution.activeSubsteps,
-        [attempt.activeSolution.currentStep]: substep,
-      },
-      manualRotations: [],
+  return patchActiveSolution(attempt, {
+    activeSubsteps: {
+      ...attempt.activeSolution.activeSubsteps,
+      [attempt.activeSolution.currentStep]: substep,
     },
-  };
+    manualRotations: [],
+  });
 }
 
-//Refactor: return ActiveSolution
 export function setActiveStep(attempt: Attempt, step: Step): Attempt {
-  let updated: Attempt = {
-    ...attempt,
-    activeSolution: {
-      ...attempt.activeSolution,
-      currentStep: step,
-      currentInput: [],
-    },
-  };
+  let updated = patchActiveSolution(attempt, { currentStep: step, currentInput: [] });
 
-  // Auto-apply default substep if none saved for this step (US6)
   if (updated.activeSolution.activeSubsteps[step] === undefined) {
     const def = defaultSubstepFor(step);
     if (def !== undefined) {
@@ -178,20 +150,17 @@ export function saveStepSolution(attempt: Attempt): Attempt {
   };
 
   return {
-    ...attempt,
-    savedStepSolutions: [...attempt.savedStepSolutions, seq],
-    activeSolution: {
-      ...attempt.activeSolution,
+    ...patchActiveSolution(attempt, {
       activeStepSolutionIds: {
         ...attempt.activeSolution.activeStepSolutionIds,
         [step]: seq.id,
       },
       currentInput: [],
-    },
+    }),
+    savedStepSolutions: [...attempt.savedStepSolutions, seq],
   };
 }
 
-//Refactor: return ActiveSolution
 export function selectStepSolution(attempt: Attempt, step: Step, sequenceId: ID): Attempt {
   const idx = STEP_ORDER.indexOf(step);
   const newIds: Partial<Record<Step, ID>> = { ...attempt.activeSolution.activeStepSolutionIds };
@@ -220,40 +189,26 @@ export function selectStepSolution(attempt: Attempt, step: Step, sequenceId: ID)
     newManualRotations = [];
   }
 
-  return {
-    ...attempt,
-    activeSolution: {
-      ...attempt.activeSolution,
-      activeStepSolutionIds: newIds,
-      activeSubsteps: newSubsteps,
-      manualRotations: newManualRotations,
-    },
-  };
+  return patchActiveSolution(attempt, {
+    activeStepSolutionIds: newIds,
+    activeSubsteps: newSubsteps,
+    manualRotations: newManualRotations,
+  });
 }
 
-//Refactor: return ActiveSolution
 export function resetToScramble(attempt: Attempt): Attempt {
   if (!attempt.scramble) return attempt;
-  return {
-    ...attempt,
-    activeSolution: {
-      ...attempt.activeSolution,
-      activeStepSolutionIds: {},
-      currentStep: 'EO',
-      currentInput: [],
-    },
-  };
+  return patchActiveSolution(attempt, {
+    activeStepSolutionIds: {},
+    currentStep: 'EO',
+    currentInput: [],
+  });
 }
 
-//TO DECIDE: return ActiveSolution czy tylko cube state
 export function applyRotation(attempt: Attempt, axis: 'x' | 'y' | 'z'): Attempt {
-  return {
-    ...attempt,
-    activeSolution: {
-      ...attempt.activeSolution,
-      manualRotations: [...attempt.activeSolution.manualRotations, axis],
-    },
-  };
+  return patchActiveSolution(attempt, {
+    manualRotations: [...attempt.activeSolution.manualRotations, axis],
+  });
 }
 
 

@@ -8,11 +8,11 @@
     scrambleinput: Snippet;
     cube: Snippet;
     inputview: Snippet;
-    solutionview: Snippet;
-    variationsview: Snippet;
+    solution: Snippet;
+    variations: Snippet;
   }
 
-  const { scramble, scrambleinput, cube, inputview, solutionview, variationsview }: Props = $props();
+  const { scramble, scrambleinput, cube, inputview, solution, variations }: Props = $props();
 
   let mobileView = $state<MobileView>('input');
 </script>
@@ -58,9 +58,9 @@
     {#if mobileView === 'input'}
       {@render inputview()}
     {:else if mobileView === 'solution'}
-      {@render solutionview()}
+      {@render solution()}
     {:else}
-      {@render variationsview()}
+      {@render variations()}
     {/if}
   {/if}
 </div>
